@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Antoinette Kitchen</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0b;
+    --bg2: #1a1810;
+    --bg3: #221f14;
+    --gold: #c9a22a;
+    --gold2: #e8c87a;
+    --text: #e8e0cc;
+    --text2: #c8c0a8;
+    --muted: #7a6a40;
+    --muted2: #5a4a2a;
+    --border: #3a3020;
+    --border2: #2a2518;
+    --green: #4a9a4a;
+    --green2: #1a2a1a;
+    --green3: #2a4a2a;
+    --red: #aa7a7a;
+    --red2: #2e1e1e;
+    --ninja: #0e1520;
+    --ninja2: #1a3050;
+    --ninja3: #5a9ada;
+    --bbq: #120d08;
+    --bbq2: #3a2010;
+    --bbq3: #c9903a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Jost', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1, h2, h3 { font-family: 'Cormorant Garamond', serif; }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #1a1508 0%, #0f0e0b 100%); border-bottom: 1px solid var(--border); padding: 24px 20px 16px; position: sticky; top: 0; z-index: 50; }
+  .header-eyebrow { font-size: 10px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+  .header-title-row { display: flex; align-items: baseline; gap: 12px; }
+  .header h1 { font-size: 22px; font-weight: 400; color: var(--gold2); }
+  .save-status { font-size: 11px; color: #6aaa6a; opacity: 0; transition: opacity 0.3s; }
+  .save-status.show { opacity: 1; }
+  .header-stats { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .tabs { display: flex; gap: 4px; margin-top: 14px; }
+  .tab { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 18px; border-radius: 4px; cursor: pointer; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-family: 'Jost', sans-serif; transition: all 0.2s; }
+  .tab.active { background: var(--gold); border-color: var(--gold); color: var(--bg); font-weight: 500; }
+
+  /* MAIN */
+  .main { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* PANTRY */
+  .pantry-intro { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .pantry-category { margin-bottom: 22px; }
+  .cat-label { font-size: 10px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; }
+  .pantry-item { display: flex; align-items: center; gap: 12px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 11px 14px; cursor: pointer; transition: background 0.15s, border-color 0.15s; user-select: none; margin-bottom: 5px; }
+  .pantry-item.checked { background: var(--green2); border-color: var(--green3); }
+  .checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .pantry-item.checked .checkbox { background: var(--green); border-color: var(--green); }
+  .checkbox-tick { color: #fff; font-size: 12px; display: none; }
+  .pantry-item.checked .checkbox-tick { display: block; }
+  .pantry-label { font-size: 14px; color: var(--text2); transition: all 0.15s; }
+  .pantry-item.checked .pantry-label { color: #6aaa6a; text-decoration: line-through; }
+
+  /* FILTERS */
+  .filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .filter-btn { background: transparent; border: 1px solid #2a3a30; color: #507060; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 11px; font-family: 'Jost', sans-serif; transition: all 0.15s; }
+  .filter-btn.active-method { background: #1a3a5a; border-color: #2a6aaa; color: #7ab8e8; }
+  .filter-btn.active-cuisine { color: #fff; }
+
+  /* RECIPE CARDS */
+  .recipe-list { display: flex; flex-direction: column; gap: 9px; }
+  .recipe-card { border-radius: 10px; padding: 13px 15px; cursor: pointer; transition: opacity 0.15s; border-left-width: 4px; border-left-style: solid; border-top: 1px solid; border-right: 1px solid; border-bottom: 1px solid; }
+  .recipe-card:active { opacity: 0.8; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .card-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+  .badge { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; }
+  .badge-cuisine { color: #fff; }
+  .badge-method { border: 1px solid; }
+  .card-name { font-family: 'Cormorant Garamond', serif; font-size: 16px; margin-bottom: 2px; }
+  .card-meta { font-size: 11px; color: var(--muted2); }
+  .card-missing { font-size: 11px; color: var(--muted2); margin-top: 5px; }
+  .ready-badge { background: #1e3a1e; border: 1px solid #3a6a3a; color: #6aaa6a; font-size: 11px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
+  .need-badge { background: #2a1e10; border: 1px solid #5a3a1a; color: #aa8a5a; font-size: 11px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-left: 10px; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px 16px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.2s; }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px; }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 21px; color: var(--gold2); font-weight: 400; margin: 6px 0 4px; }
+  .modal-time { font-size: 12px; color: var(--muted); }
+  .modal-notice { border-radius: 8px; padding: 10px 13px; margin-bottom: 14px; font-size: 12px; line-height: 1.5; }
+  .notice-ninja { background: #0e1a2a; border: 1px solid #1a3a5a; color: var(--ninja3); }
+  .notice-bbq { background: #1a0e05; border: 1px solid #5a3010; color: #c97a3a; }
+  .section-label { font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .ing-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .ing-tag { padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+  .ing-have { background: #1e2e1e; border: 1px solid #3a7a3a; color: #7aaa7a; }
+  .ing-missing { background: var(--red2); border: 1px solid #7a3a3a; color: var(--red); }
+  .steps-list { margin-bottom: 18px; }
+  .step { display: flex; gap: 11px; margin-bottom: 11px; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; margin-top: 1px; }
+  .step-text { font-size: 14px; line-height: 1.6; color: var(--text2); }
+  .tip-box { background: #1e1a0e; border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; padding: 11px 14px; }
+  .tip-label { font-size: 10px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 3px; }
+  .tip-text { font-size: 13px; color: #a89870; line-height: 1.5; }
+
+  /* NINJA TIP */
+  .ninja-tip { background: #0e1a2a; border: 1px solid #1a3a5a; border-radius: 10px; padding: 11px 14px; margin-bottom: 14px; font-size: 12px; color: var(--ninja3); line-height: 1.6; }
+
+  @media (max-width: 400px) {
+    .header h1 { font-size: 19px; }
+    .main { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">The Antoinette Kitchen</div>
+  <div class="header-title-row">
+    <h1>Your 35-Dish Pantry System</h1>
+    <span class="save-status" id="saveStatus">✓ Saved</span>
+  </div>
+  <div class="header-stats" id="headerStats">Loading...</div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('recipes')">🍳 Recipes</button>
+    <button class="tab" onclick="showTab('pantry')">🛒 Pantry</button>
+  </div>
+</div>
+
+<div class="main">
+  <div id="recipesTab"></div>
+  <div id="pantryTab" style="display:none"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+const PANTRY = {
+  proteins: ["Chicken","Beef","Fish"],
+  starches: ["Pasta (spaghetti/penne)","Brown rice","Sweet potato","Heavy Dark Pumpkin (Kabocha)","Quinoa"],
+  aromatics: ["Onion","Garlic","Chicken stock"],
+  vegetables: ["Bell peppers","Tomatoes","Cabbage","Carrots","Spinach","Mushrooms"],
+  dairy: ["Butter","Parmesan / hard cheese","Heavy cream / coconut cream"],
+  pantry: ["Canned tomatoes","Canned chickpeas / kidney beans","Canned corn","Canned tuna","Cooking oil","Olive oil","Soy sauce","Coconut milk (canned)","Ketchup","BBQ sauce","Mayonnaise","Vinegar","Sugar","Cornstarch"],
+  seasonings: ["All-purpose seasoning","Slap Ya Mama seasoning","Black pepper","Paprika","Cumin","Italian seasoning","Curry powder","Taco seasoning","Thyme","Chili flakes / scotch bonnet","Garlic powder","Salt","Bay leaves","Tomato paste"],
+  extras: ["Eggs","Lime / lemon","Fresh ginger","Sesame oil (small bottle)","Whole wheat bread"]
+};
+
+const CUISINE_COLORS = {
+  Italian:"#c9542a", Asian:"#2a7ac9", "Middle Eastern":"#c9a22a",
+  American:"#5a2ac9", Fusion:"#2ac987", Caribbean:"#c92a7a", Mexican:"#3aaa3a"
+};
+
+const METHOD_ICONS = {
+  Stovetop:"🔥", "Stovetop + Air Fryer":"🔥💨", "BBQ Grill":"🪵", Ninja:"🥘", "No Cook":"🥪"
+};
+
+const RECIPES = [
+  {id:1,name:"Beef Bolognese",cuisine:"Italian",method:"Stovetop",ninja:false,time:"40 min",serve:"Pasta",ingredients:["Beef","Pasta (spaghetti/penne)","Onion","Garlic","Canned tomatoes","Tomato paste","Olive oil","Carrots","Italian seasoning","Black pepper","Salt"],steps:["Brown beef in oil with onion, garlic, carrots","Add tomato paste, cook 2 min","Add canned tomatoes + chicken stock, simmer 20 min","Season with Italian seasoning, toss with pasta"],tip:"Grate carrot fine — it sweetens the sauce and disappears into it."},
+  {id:2,name:"Chicken Stir-Fry",cuisine:"Asian",method:"Stovetop",ninja:false,time:"20 min",serve:"Brown rice or quinoa",ingredients:["Chicken","Bell peppers","Cabbage","Onion","Garlic","Soy sauce","Sesame oil (small bottle)","Fresh ginger","Chili flakes / scotch bonnet","Cooking oil","Brown rice"],steps:["Slice chicken thin, sear on high heat in cooking oil","Remove chicken, stir-fry veggies","Return chicken, add soy + sesame + ginger + chili","Toss 2 min, serve over rice or quinoa"],tip:"High heat the whole time — that's what makes it taste like takeout."},
+  {id:3,name:"Chinese Salt & Pepper Chicken",cuisine:"Asian",method:"Stovetop",ninja:false,time:"30 min",serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",ingredients:["Chicken","Onion","Bell peppers","Garlic","Chili flakes / scotch bonnet","Black pepper","Garlic powder","Salt","Cooking oil","Soy sauce","Fresh ginger"],steps:["Cut chicken into pieces, season generously with salt, black pepper, garlic powder — let sit 10 min","Shallow fry chicken in hot oil on medium-high, turning, until golden and crispy all over — about 12-15 min. Drain on paper towel.","Pour off most of the oil, leave just a thin layer. On high heat, fry sliced onion, peppers, garlic, ginger, chili flakes — 2 min, fast and hot","Return chicken to pan, toss everything together with a splash of soy sauce, 1 min on high heat. Serve immediately."],tip:"The key is two separate frying stages — crispy chicken first, aromatics second, then combine at the end. If you do it all together the chicken loses its crunch."},
+  {id:4,name:"Creamy Chicken Pasta",cuisine:"Italian",method:"Stovetop",ninja:false,time:"30 min",serve:"Pasta",ingredients:["Chicken","Pasta (spaghetti/penne)","Heavy cream / coconut cream","Garlic","Onion","Parmesan / hard cheese","Butter","Chicken stock","Black pepper","Salt","Italian seasoning"],steps:["Cook pasta, reserve a cup of pasta water","Sear chicken in butter, slice","Sauté garlic, add cream + stock, simmer 5 min","Add pasta + chicken, toss with cheese, loosen with pasta water if needed"],tip:"Pasta water is liquid gold — the starch thickens your sauce without making it heavy."},
+  {id:5,name:"Chicken Shawarma Bowl",cuisine:"Middle Eastern",method:"Stovetop",ninja:false,time:"25 min",serve:"Quinoa or brown rice",ingredients:["Chicken","Quinoa","Garlic","Lime / lemon","Paprika","Cumin","All-purpose seasoning","Olive oil","Tomatoes","Onion","Spinach"],steps:["Marinate chicken in olive oil, garlic, cumin, paprika, lime — 15 min minimum","Pan-fry on medium-high 5-6 min per side until charred at edges","Rest 5 min, slice thin","Serve over quinoa with fresh tomato, onion, spinach"],tip:"The char on the pan is what makes this taste like shawarma. Don't move the chicken while it sears."},
+  {id:6,name:"Beef & Sweet Potato Hash",cuisine:"American",method:"Stovetop",ninja:false,time:"30 min",serve:"One-pan — no extra starch needed",ingredients:["Beef","Sweet potato","Onion","Garlic","Bell peppers","Paprika","Cumin","Chili flakes / scotch bonnet","Cooking oil","Eggs","Salt","Black pepper"],steps:["Cube sweet potato, par-boil 8 min, drain well","Brown beef with onion, garlic, peppers + spices","Add sweet potato, press into pan, let crisp undisturbed 3 min","Make wells, crack eggs in, cover and cook to your liking"],tip:"One pan, no separate starch needed. The sweet potato IS the starch here."},
+  {id:7,name:"Chickpea & Spinach Stew",cuisine:"Middle Eastern",method:"Stovetop",ninja:false,time:"25 min",serve:"Brown rice or quinoa",ingredients:["Canned chickpeas / kidney beans","Spinach","Canned tomatoes","Onion","Garlic","Cumin","Paprika","Olive oil","Chicken stock","Chili flakes / scotch bonnet","Salt"],steps:["Sauté onion + garlic + cumin + paprika in olive oil","Add chickpeas + canned tomatoes + stock, simmer 15 min","Mash roughly a third of the chickpeas to thicken the sauce","Wilt spinach in, season, serve over rice or quinoa"],tip:"Cheap, fast, and complete. Crack a fried egg on top for extra protein."},
+  {id:8,name:"Pan Sticky Chicken Wings",cuisine:"American",method:"Stovetop",ninja:false,time:"40 min",serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",ingredients:["Chicken","Garlic","Soy sauce","BBQ sauce","Chili flakes / scotch bonnet","Garlic powder","Paprika","Slap Ya Mama seasoning","Black pepper","Salt","Cooking oil","Lime / lemon","Sugar"],steps:["Season wings with garlic powder, paprika, Slap Ya Mama, salt, pepper","Heat oil in pan, add wings, cover with lid — cook on medium 15 min, turning halfway","Remove lid, turn heat to medium-high — cook uncovered 10 min turning often until skin crisps","Mix BBQ sauce + soy + garlic + chili + squeeze of lime + pinch of sugar for glaze, pour over wings, toss on low heat 3 min until sticky"],tip:"The covered cook does the work — steams them through so they're fully cooked before you crisp them. Don't skip that step or you'll have raw inside, burnt outside."},
+  {id:9,name:"Shakshuka",cuisine:"Middle Eastern",method:"Stovetop",ninja:false,time:"25 min",serve:"Quinoa or bread on the side",ingredients:["Eggs","Canned tomatoes","Bell peppers","Onion","Garlic","Cumin","Paprika","Chili flakes / scotch bonnet","Olive oil","Salt"],steps:["Sauté onion, pepper, garlic + cumin + paprika + chili","Add canned tomatoes, simmer 10 min until thickened","Make 3-4 wells in sauce, crack eggs in","Cover and cook until whites set, yolks still runny"],tip:"Eggs are the protein here — no meat needed. Fast, cheap, genuinely delicious."},
+  {id:10,name:"Chicken Curry",cuisine:"Asian",method:"Stovetop",ninja:false,time:"35 min",serve:"Brown rice or quinoa",ingredients:["Chicken","Coconut milk (canned)","Onion","Garlic","Fresh ginger","Curry powder","Tomato paste","Chicken stock","Cooking oil","Salt","Chili flakes / scotch bonnet"],steps:["Sauté onion, garlic, ginger in oil until golden","Add curry powder + tomato paste, fry 2 min until fragrant","Add chicken, stir to coat, cook 3 min","Add coconut milk + stock, simmer 20 min. Serve over rice or quinoa."],tip:"Frying the curry powder in oil before adding liquid is what gives it depth — don't skip that step."},
+  {id:11,name:"Beef Stir-Fried Noodles",cuisine:"Asian",method:"Stovetop",ninja:false,time:"25 min",serve:"Noodles (pasta)",ingredients:["Beef","Pasta (spaghetti/penne)","Soy sauce","Garlic","Fresh ginger","Cabbage","Carrots","Sesame oil (small bottle)","Chili flakes / scotch bonnet","Cooking oil"],steps:["Cook pasta al dente, drain, toss immediately with sesame oil","Slice beef thin, sear on high heat, set aside","Stir-fry cabbage + carrots + garlic on high heat","Return beef + pasta, add soy + ginger + chili, toss hard on high heat"],tip:"Spaghetti works perfectly as lo mein. High heat and fast tossing is everything here."},
+  {id:12,name:"Chicken & Mushroom Cream Sauce",cuisine:"Italian",method:"Stovetop",ninja:false,time:"30 min",serve:"Pasta",ingredients:["Chicken","Mushrooms","Heavy cream / coconut cream","Garlic","Butter","Chicken stock","Thyme","Black pepper","Salt","Pasta (spaghetti/penne)","Italian seasoning"],steps:["Sear chicken in butter, remove and slice","Cook mushrooms in same pan on high — don't stir, let them brown","Add garlic, cream, stock, thyme, Italian seasoning — simmer 5 min","Return chicken, toss with pasta"],tip:"Resist stirring the mushrooms. Let them sit and brown — that's where the meaty rich flavour comes from."},
+  {id:13,name:"Garlic Butter Fish",cuisine:"Italian",method:"Stovetop",ninja:false,time:"15 min",serve:"Steamed sweet potato or kabocha pumpkin",ingredients:["Fish","Butter","Garlic","Lime / lemon","Italian seasoning","Salt","Black pepper","Cooking oil"],steps:["Season fish with salt, pepper, Italian seasoning","Heat cooking oil + butter until foaming","Cook fish 3-4 min per side — don't move it","Add minced garlic last 60 seconds, squeeze lime over"],tip:"Fastest meal on the list. Steam sweet potato while fish cooks — done in 20 min total."},
+  {id:14,name:"Quinoa Chicken Bowl",cuisine:"Middle Eastern",method:"Stovetop",ninja:false,time:"20 min",serve:"Quinoa",ingredients:["Quinoa","Tomatoes","Onion","Spinach","Lime / lemon","Olive oil","Garlic","Salt","Black pepper","Chicken","Cumin","Paprika"],steps:["Cook quinoa, fluff and let cool slightly","Pan-fry chicken strips with cumin, paprika, garlic, oil","Chop tomatoes, onion, spinach roughly","Build bowl: quinoa base, veg, chicken on top, dress with olive oil + lime"],tip:"Warm spiced chicken on slightly cooled quinoa is a great contrast — don't serve everything piping hot."},
+  {id:15,name:"Sweet Potato & Chickpea Coconut Stew",cuisine:"Fusion",method:"Stovetop",ninja:false,time:"30 min",serve:"Brown rice or quinoa",ingredients:["Sweet potato","Canned chickpeas / kidney beans","Coconut milk (canned)","Onion","Garlic","Fresh ginger","Curry powder","Chili flakes / scotch bonnet","Chicken stock","Cooking oil","Tomato paste","Salt"],steps:["Sauté onion, garlic, ginger + curry powder + tomato paste","Add cubed sweet potato + stock, cook 10 min","Add chickpeas + coconut milk, simmer 15 min","Mash a few chickpeas into sauce to thicken, serve over rice or quinoa"],tip:"Your vegetarian budget hero. Filling, nutritious, costs almost nothing."},
+  {id:16,name:"Fish in Coconut Tomato Sauce",cuisine:"Fusion",method:"Stovetop",ninja:false,time:"25 min",serve:"Brown rice or quinoa",ingredients:["Fish","Coconut milk (canned)","Canned tomatoes","Onion","Garlic","Fresh ginger","Chili flakes / scotch bonnet","Thyme","Cooking oil","Lime / lemon"],steps:["Sauté onion, garlic, ginger in oil","Add tomatoes + coconut milk + chili + thyme, simmer 10 min","Add fish, cook gently 8 min","Squeeze lime, serve over rice or quinoa"],tip:"Don't stir the fish — let it poach gently so it stays whole."},
+  {id:17,name:"Soy-Ginger Chicken",cuisine:"Asian",method:"Stovetop",ninja:false,time:"25 min",serve:"Brown rice or quinoa",ingredients:["Chicken","Soy sauce","Fresh ginger","Garlic","Sesame oil (small bottle)","Lime / lemon","Onion","Chili flakes / scotch bonnet","Cooking oil","Brown rice"],steps:["Score chicken or use thin pieces, rub with garlic + ginger","Pan-fry in cooking oil 5-6 min per side until cooked through","Mix soy + sesame + lime + chili for sauce","Pour sauce over chicken off heat, serve with rice or quinoa"],tip:"Same technique as the fish version but more forgiving — chicken is harder to overcook."},
+  {id:18,name:"Pan BBQ Chicken",cuisine:"American",method:"Stovetop",ninja:false,time:"30 min",serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",ingredients:["Chicken","BBQ sauce","Garlic powder","Paprika","All-purpose seasoning","Black pepper","Salt","Cooking oil","Lime / lemon"],steps:["Season chicken with garlic powder, paprika, all-purpose, salt, pepper","Sear in hot oil 5-6 min per side on medium-high until cooked through","Turn heat to low, brush BBQ sauce all over, flip once — let it caramelise 2 min per side","Rest 5 min, squeeze lime over."],tip:"Low heat when the sauce goes on — BBQ sauce burns fast on high heat. That sticky caramelised finish is everything."},
+  {id:19,name:"Spiced Pan Chicken Thighs",cuisine:"Middle Eastern",method:"Stovetop",ninja:false,time:"30 min",serve:"Quinoa, brown rice, sweet potato, or kabocha pumpkin",ingredients:["Chicken","Garlic","Lime / lemon","Cumin","Paprika","Curry powder","Olive oil","Salt","Black pepper","Chili flakes / scotch bonnet"],steps:["Mix olive oil, garlic, cumin, paprika, curry powder, chili, lime — marinate chicken 30 min minimum","Sear skin-side down in a dry or lightly oiled pan on medium-high, 6-7 min — don't move it","Flip, cook another 5-6 min until cooked through","Rest 5 min. Serve over quinoa, rice, or alongside sweet potato or kabocha pumpkin."],tip:"A dry pan (no extra oil) on the skin side renders the fat and crisps the skin — works just like a grill."},
+  {id:20,name:"Pan Beef with BBQ Sauce",cuisine:"American",method:"Stovetop",ninja:false,time:"25 min",serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",ingredients:["Beef","Bell peppers","Onion","BBQ sauce","Garlic powder","Paprika","Soy sauce","Cooking oil","Black pepper","Salt"],steps:["Cut beef into cubes, marinate in soy + garlic powder + paprika + oil — 20 min minimum","Sear beef cubes on HIGH heat in batches — don't crowd the pan, 2 min per side","Remove beef, sauté peppers and onion in same pan","Return beef, pour BBQ sauce over, toss on low heat until sticky."],tip:"High heat on the beef, low heat when the sauce goes in. That contrast is what makes it taste like proper BBQ."},
+  {id:21,name:"Pan BBQ Fish",cuisine:"American",method:"Stovetop",ninja:false,time:"20 min",serve:"Brown rice, sweet potato, or kabocha pumpkin",ingredients:["Fish","BBQ sauce","Garlic powder","Lime / lemon","Paprika","Salt","Black pepper","Cooking oil"],steps:["Pat fish completely dry, season with garlic powder, paprika, salt, pepper","Pan-fry in hot oil 3-4 min per side — don't touch until it releases naturally","Turn heat to low, brush BBQ sauce on top side, flip gently, 1 min","Squeeze lime over, serve with rice, sweet potato, or kabocha pumpkin"],tip:"Dry fish is the rule — wet fish steams instead of sears. Pat it dry every time."},
+  {id:22,name:"BBQ Chicken (Grill)",cuisine:"Caribbean",method:"BBQ Grill",ninja:false,time:"35 min",serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",ingredients:["Chicken","Ketchup","Garlic","Lime / lemon","All-purpose seasoning","Slap Ya Mama seasoning","Black pepper","Thyme","Chili flakes / scotch bonnet","Cooking oil"],steps:["Mix ketchup + garlic + lime + chili + Slap Ya Mama for glaze","Season chicken with all-purpose + black pepper + thyme + oil","Grill medium heat 6-7 min per side with lid closed","Brush glaze on last 5 min — watch closely, it caramelises fast"],tip:"This one is worth firing up the grill for. The char you get outside with juicy inside is hard to replicate on the stove."},
+  {id:23,name:"Sweet & Sour Chicken",cuisine:"Asian",method:"Stovetop",ninja:false,time:"35 min",serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",ingredients:["Chicken","Bell peppers","Onion","Tomatoes","Vinegar","Sugar","Soy sauce","Ketchup","Garlic","Cooking oil","Cornstarch","Salt","Black pepper"],steps:["Cut chicken into chunks, season with salt + pepper, fry in hot oil until golden and crispy — set aside on paper towel","In same pan, sauté garlic, peppers, onion 2 min","Add ketchup + vinegar + sugar + soy sauce, stir into a sauce, simmer 3 min","Return chicken, toss to coat."],tip:"The ratio is roughly 2 tbsp vinegar : 2 tbsp sugar : 2 tbsp ketchup : 1 tbsp soy. Taste and adjust — more vinegar for tang, more sugar for sweetness."},
+  {id:24,name:"Crispy Fried Chicken with Sauce",cuisine:"American",method:"Stovetop",ninja:false,time:"35 min",serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",ingredients:["Chicken","Garlic powder","Paprika","Slap Ya Mama seasoning","All-purpose seasoning","Black pepper","Salt","Cooking oil","BBQ sauce","Chili flakes / scotch bonnet","Lime / lemon"],steps:["Season chicken well with all spices — let sit 15 min if time allows","Shallow fry in enough oil to come halfway up chicken, medium-high heat, 6-7 min per side until deep golden","Drain on paper towel","Mix BBQ sauce + chili + lime for dipping sauce."],tip:"Don't move the chicken while it fries — let the crust form undisturbed. Flipping too early = crust sticks to the pan."},
+  {id:25,name:"Teriyaki Chicken",cuisine:"Asian",method:"Stovetop",ninja:false,time:"25 min",serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",ingredients:["Chicken","Soy sauce","Sugar","Garlic","Fresh ginger","Vinegar","Cornstarch","Cooking oil","Sesame oil (small bottle)","Lime / lemon"],steps:["Mix teriyaki sauce: 3 tbsp soy sauce + 2 tbsp sugar + 1 tsp vinegar + 1 tsp cornstarch + minced garlic + grated ginger — stir well","Pan-fry chicken in cooking oil on medium-high, 5-6 min per side until cooked through and golden","Pour sauce over chicken in pan, turn heat to medium — sauce will bubble and thicken into a glaze in about 2 min","Flip chicken to coat both sides, drizzle sesame oil, squeeze lime."],tip:"The cornstarch is what makes the sauce go glossy and thick like the restaurant version. Don't skip it here."},
+  {id:26,name:"Mexican Chicken Bowl",cuisine:"Mexican",method:"Stovetop",ninja:false,time:"30 min",serve:"Brown rice or quinoa",ingredients:["Chicken","Taco seasoning","Canned chickpeas / kidney beans","Bell peppers","Onion","Garlic","Tomatoes","Lime / lemon","Cooking oil","Cumin","Salt","Black pepper","Spinach"],steps:["Season chicken with taco seasoning + cumin + salt + pepper","Pan-fry chicken in oil 5-6 min per side, rest and slice into strips","In same pan, sauté onion, garlic, peppers — add beans, cook 5 min","Build bowl: rice or quinoa base, beans and veg, chicken strips on top, fresh tomato and spinach, squeeze of lime all over"],tip:"The lime at the end is not optional — it ties the whole bowl together. Be generous with it."},
+  {id:27,name:"Fried Egg & Cheese Sandwich",cuisine:"American",method:"Stovetop",ninja:false,time:"10 min",serve:"Whole wheat bread",ingredients:["Eggs","Parmesan / hard cheese","Whole wheat bread","Ketchup","Butter","Salt","Black pepper"],steps:["Melt a little butter in pan on medium heat","Crack egg in, season with salt and pepper, fry to your liking — runny or fully set","Lay cheese on egg while still in pan, cover 30 sec to melt","Toast bread if you like, spread ketchup, add egg. Done."],tip:"Your 10-minute rescue meal. Keep eggs and bread stocked and you always have something to eat no matter what."},
+  {id:28,name:"Tuna Fish Sandwich",cuisine:"American",method:"No Cook",ninja:false,time:"5 min",serve:"Whole wheat bread",ingredients:["Canned tuna","Mayonnaise","Onion","Canned corn","Slap Ya Mama seasoning","Whole wheat bread","Black pepper"],steps:["Drain tuna well, add to bowl","Add mayo, finely diced onion, corn, Slap Ya Mama, black pepper","Mix together — taste and adjust mayo or seasoning","Pile onto whole wheat bread. Done."],tip:"The cheaper and faster of your two emergency meals. Canned tuna + mayo + whatever you have = always works."},
+  {id:29,name:"Air Fryer Chicken Thighs",cuisine:"American",method:"Stovetop + Air Fryer",ninja:false,time:"25 min",serve:"Brown rice, quinoa, or sweet potato",ingredients:["Chicken","Garlic powder","Paprika","All-purpose seasoning","Cooking oil","Lime / lemon","Black pepper","Salt"],steps:["Rub chicken with oil and all spices","Sear skin-side down in pan 4 min to render fat","Transfer to air fryer 190°C for 12-14 min","Rest 5 min, serve with your starch of choice"],tip:"You can skip the sear and go straight into the air fryer — just add 4 more minutes. Stovetop-only works too, 6 min per side."},
+  {id:30,name:"Slow-Cook Beef Stew",cuisine:"American",method:"Ninja",ninja:true,time:"7–8 hrs (hands-off)",serve:"Brown rice or quinoa",ingredients:["Beef","Carrots","Sweet potato","Onion","Garlic","Thyme","Chicken stock","Bay leaves","Canned tomatoes","Tomato paste","Black pepper","Salt"],steps:["Ninja on Stovetop: brown beef in batches, set aside","Sauté onion, garlic, thyme + tomato paste 2 min","Add beef, veg, stock, bay leaves — stir","Slow Cook LOW 7–8 hours. Serve over rice or quinoa."],tip:"Use the cheapest toughest cut — chuck, shin, stewing beef. Long slow heat makes them fall-apart tender."},
+  {id:31,name:"Slow-Cook Beef Chili",cuisine:"American",method:"Ninja",ninja:true,time:"6–8 hrs (hands-off)",serve:"Brown rice or quinoa",ingredients:["Beef","Canned chickpeas / kidney beans","Canned tomatoes","Onion","Garlic","Bell peppers","Tomato paste","Cumin","Paprika","Chili flakes / scotch bonnet","Cooking oil","Salt","Black pepper"],steps:["Ninja on Stovetop: brown beef with onion, pepper, garlic","Add tomato paste + spices, stir 2 min","Add beans + canned tomatoes, stir well","Slow Cook LOW 6–8 hours. Serve over rice or quinoa."],tip:"Start before you leave for the day. It's ready when you get home and even better reheated the next day."},
+  {id:32,name:"Slow-Cook Chicken Curry",cuisine:"Asian",method:"Ninja",ninja:true,time:"6–7 hrs (hands-off)",serve:"Brown rice or quinoa",ingredients:["Chicken","Sweet potato","Coconut milk (canned)","Onion","Garlic","Fresh ginger","Curry powder","Paprika","Chili flakes / scotch bonnet","Chicken stock","Tomato paste","Salt"],steps:["Ninja on Stovetop: sauté onion, garlic, ginger + curry powder + tomato paste","Add chicken, stir to coat","Add cubed sweet potato + coconut milk + stock","Slow Cook LOW 6–7 hours. Shred chicken into sauce, serve over rice or quinoa."],tip:"The chicken shreds into the sauce and becomes the sauce. Don't serve it whole."},
+  {id:33,name:"Slow-Cook Pulled Beef",cuisine:"American",method:"Ninja",ninja:true,time:"8 hrs (hands-off)",serve:"Brown rice, quinoa, or sweet potato",ingredients:["Beef","Onion","Garlic","Tomato paste","Soy sauce","Paprika","Cumin","Chili flakes / scotch bonnet","Chicken stock","Black pepper","Salt","Lime / lemon"],steps:["Ninja on Stovetop: sear whole beef chunk all over in oil","Mix stock + tomato paste + soy + spices, pour over","Add onion and garlic around the beef","Slow Cook LOW 8 hours, shred with forks in the sauce. Serve over rice or quinoa."],tip:"One cook = 4–5 meals of protein for the week. Best budget move on the whole list."},
+  {id:34,name:"Slow-Cook Coconut Chicken Stew",cuisine:"Fusion",method:"Ninja",ninja:true,time:"6–7 hrs (hands-off)",serve:"Brown rice or quinoa",ingredients:["Chicken","Sweet potato","Coconut milk (canned)","Onion","Garlic","Fresh ginger","Thyme","Chili flakes / scotch bonnet","Chicken stock","Canned tomatoes","Salt","Black pepper"],steps:["Add all ingredients to Ninja","Stir together well","Slow Cook LOW 6–7 hours","Shred chicken, stir everything together, serve over rice or quinoa"],tip:"No browning needed for this one — just add everything and go. True zero-effort meal."},
+  {id:35,name:"Slow-Cook Coconut Fish Stew",cuisine:"Fusion",method:"Ninja",ninja:true,time:"3–4 hrs (hands-off)",serve:"Brown rice or quinoa",ingredients:["Fish","Coconut milk (canned)","Canned tomatoes","Onion","Garlic","Fresh ginger","Chili flakes / scotch bonnet","Thyme","Sweet potato","Lime / lemon","Salt"],steps:["Ninja on Stovetop: sauté onion, garlic, ginger","Add canned tomatoes + coconut milk + thyme + chili + sweet potato","Switch to Slow Cook LOW","After 2.5 hrs add fish, cook final 1 hr. Squeeze lime, serve over rice or quinoa."],tip:"Fish goes in late so it doesn't overcook. LOW heat only — fish is delicate."},
+];
+
+// STATE
+let checked = {};
+let activeTab = 'recipes';
+let methodFilter = 'All';
+let cuisineFilter = 'All';
+let currentRecipe = null;
+
+// STORAGE
+function loadData() {
+  try { checked = JSON.parse(localStorage.getItem('antoinette_pantry') || '{}'); } catch { checked = {}; }
+}
+function saveData() {
+  try {
+    localStorage.setItem('antoinette_pantry', JSON.stringify(checked));
+    const s = document.getElementById('saveStatus');
+    s.classList.add('show');
+    setTimeout(() => s.classList.remove('show'), 1500);
+  } catch(e) {}
+}
+function toggleItem(item) {
+  checked[item] = !checked[item];
+  saveData();
+  updateStats();
+  renderPantry();
+  renderRecipes();
+}
+
+// STATS
+function updateStats() {
+  const total = Object.values(PANTRY).flat().length;
+  const have = Object.values(PANTRY).flat().filter(i => checked[i]).length;
+  const ready = RECIPES.filter(r => r.ingredients.every(i => checked[i])).length;
+  document.getElementById('headerStats').textContent = `${have}/${total} stocked · ${ready} ready to cook`;
+}
+
+// TABS
+function showTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='recipes')||(i===1&&tab==='pantry')));
+  document.getElementById('recipesTab').style.display = tab === 'recipes' ? '' : 'none';
+  document.getElementById('pantryTab').style.display = tab === 'pantry' ? '' : 'none';
+}
+
+// PANTRY RENDER
+function renderPantry() {
+  const container = document.getElementById('pantryTab');
+  let html = `<div class="pantry-intro">Check off items as you buy them. Your progress saves automatically to this browser. Recipes sort by what you can make right now.</div>`;
+  for (const [cat, items] of Object.entries(PANTRY)) {
+    const label = cat.replace(/([A-Z])/g, ' $1').trim();
+    html += `<div class="pantry-category"><div class="cat-label">${label}</div>`;
+    for (const item of items) {
+      const isChecked = !!checked[item];
+      html += `<div class="pantry-item ${isChecked?'checked':''}" onclick="toggleItem('${item.replace(/'/g,"\\'")}')">
+        <div class="checkbox"><span class="checkbox-tick">✓</span></div>
+        <span class="pantry-label">${item}</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+// RECIPES RENDER
+function getMissing(recipe) {
+  return recipe.ingredients.filter(i => !checked[i]);
+}
+function renderRecipes() {
+  const container = document.getElementById('recipesTab');
+  const allMethods = ['All','Stovetop','BBQ Grill','Ninja','Stovetop + Air Fryer','No Cook'];
+  const allCuisines = ['All',...new Set(RECIPES.map(r=>r.cuisine))];
+
+  let html = `<div class="ninja-tip">🥘 <strong>Ninja tip:</strong> Filter by Ninja to see slow-cook meals — start one before you leave, eat when you're home.</div>`;
+
+  // Method filters
+  html += `<div class="filter-row">`;
+  for (const m of allMethods) {
+    const labels = {'Stovetop':'🔥 Stovetop','Stovetop + Air Fryer':'💨 Air Fryer','BBQ Grill':'🪵 BBQ','Ninja':'🥘 Ninja','No Cook':'🥪 No Cook','All':'All'};
+    const isActive = methodFilter === m;
+    html += `<button class="filter-btn ${isActive?'active-method':''}" onclick="setMethod('${m}')">${labels[m]||m}</button>`;
+  }
+  html += `</div>`;
+
+  // Cuisine filters
+  html += `<div class="filter-row">`;
+  for (const c of allCuisines) {
+    const color = CUISINE_COLORS[c] || '#444';
+    const isActive = cuisineFilter === c;
+    html += `<button class="filter-btn ${isActive?'active-cuisine':''}" style="${isActive?`background:${color};border-color:${color}`:`border-color:#3a3020`}" onclick="setCuisine('${c}')">${c}</button>`;
+  }
+  html += `</div>`;
+
+  // Recipe cards
+  const filtered = RECIPES
+    .filter(r => (methodFilter==='All'||r.method===methodFilter) && (cuisineFilter==='All'||r.cuisine===cuisineFilter))
+    .sort((a,b) => getMissing(a).length - getMissing(b).length);
+
+  html += `<div class="recipe-list">`;
+  for (const r of filtered) {
+    const missing = getMissing(r);
+    const ready = missing.length === 0;
+    const color = CUISINE_COLORS[r.cuisine] || '#555';
+    const isBBQ = r.method === 'BBQ Grill';
+    const bgColor = r.ninja ? '#0e1520' : isBBQ ? '#120d08' : '#1a1810';
+    const borderColor = ready ? '#2a4a2a' : r.ninja ? '#1a3050' : isBBQ ? '#3a2010' : '#2a2518';
+    const leftColor = ready ? '#4a9a4a' : r.ninja ? '#2a6aaa' : isBBQ ? '#7a4a1a' : color;
+    const nameColor = r.ninja ? '#7ab8ea' : isBBQ ? '#c9903a' : '#e8c87a';
+
+    html += `<div class="recipe-card" style="background:${bgColor};border-color:${borderColor};border-left-color:${leftColor}" onclick="openRecipe(${r.id})">
+      <div class="card-top">
+        <div style="flex:1">
+          <div class="card-badges">
+            <span class="badge badge-cuisine" style="background:${color}">${r.cuisine}</span>
+            <span class="badge badge-method" style="background:${r.ninja?'#1a2a3a':isBBQ?'#2a1a0a':'#1e1a0e'};border-color:${r.ninja?'#2a5a8a':isBBQ?'#7a4a1a':'#3a3020'};color:${r.ninja?'#5a9ada':isBBQ?'#c97a3a':'#7a6a40'}">${METHOD_ICONS[r.method]||''} ${r.method}</span>
+          </div>
+          <div class="card-name" style="color:${nameColor}">${r.name}</div>
+          <div class="card-meta">⏱ ${r.time} · 🍽 ${r.serve}</div>
+        </div>
+        ${ready ? `<div class="ready-badge">✓ Ready</div>` : `<div class="need-badge">Need ${missing.length}</div>`}
+      </div>
+      ${!ready && missing.length > 0 ? `<div class="card-missing">Missing: ${missing.slice(0,3).join(', ')}${missing.length>3?' +'+( missing.length-3)+' more':''}</div>` : ''}
+    </div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function setMethod(m) { methodFilter = m; renderRecipes(); }
+function setCuisine(c) { cuisineFilter = c; renderRecipes(); }
+
+// MODAL
+function openRecipe(id) {
+  const r = RECIPES.find(x => x.id === id);
+  if (!r) return;
+  const color = CUISINE_COLORS[r.cuisine] || '#555';
+  let html = `<div class="modal-header">
+    <div style="flex:1;padding-right:12px">
+      <div class="card-badges">
+        <span class="badge badge-cuisine" style="background:${color}">${r.cuisine}</span>
+        <span class="badge badge-method" style="background:${r.ninja?'#1a2a3a':'#1e1a0e'};border-color:${r.ninja?'#2a5a8a':'#3a3020'};color:${r.ninja?'#5a9ada':'#7a6a40'}">${METHOD_ICONS[r.method]||''} ${r.method}</span>
+      </div>
+      <div class="modal-title">${r.name}</div>
+      <div class="modal-time">⏱ ${r.time} &nbsp;·&nbsp; 🍽 ${r.serve}</div>
+    </div>
+    <button class="modal-close" onclick="closeModalBtn()">×</button>
+  </div>`;
+
+  if (r.ninja) html += `<div class="modal-notice notice-ninja">🥘 <strong>Ninja:</strong> Brown on Stovetop mode first, then switch to Slow Cook LOW and leave it.</div>`;
+  if (r.method === 'BBQ Grill') html += `<div class="modal-notice notice-bbq">🪵 <strong>BBQ Grill:</strong> Preheat 10 min before cooking. Keep lid closed between flips.</div>`;
+
+  html += `<div class="section-label">Ingredients</div><div class="ing-grid">`;
+  for (const ing of r.ingredients) {
+    html += `<span class="ing-tag ${checked[ing]?'ing-have':'ing-missing'}">${checked[ing]?'✓':'✗'} ${ing}</span>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="section-label">Method</div><div class="steps-list">`;
+  r.steps.forEach((step, i) => {
+    html += `<div class="step"><div class="step-num">${i+1}</div><div class="step-text">${step}</div></div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="tip-box"><div class="tip-label">Chef's Tip</div><div class="tip-text">${r.tip}</div></div>`;
+
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModalBtn(); }
+function closeModalBtn() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+// INIT
+loadData();
+updateStats();
+renderPantry();
+renderRecipes();
+</script>
+</body>
+</html>
