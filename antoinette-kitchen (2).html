@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Antoinette Kitchen</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0b; --bg2: #1a1810; --bg3: #221f14;
+    --gold: #c9a22a; --gold2: #e8c87a;
+    --text: #e8e0cc; --text2: #c8c0a8;
+    --muted: #7a6a40; --muted2: #5a4a2a;
+    --border: #3a3020; --border2: #2a2518;
+    --green: #4a9a4a; --green2: #1a2a1a; --green3: #2a4a2a;
+    --red: #aa7a7a; --red2: #2e1e1e;
+    --ninja-bg: #0e1520; --ninja-border: #1a3050; --ninja-text: #5a9ada;
+    --bbq-bg: #120d08; --bbq-border: #3a2010; --bbq-text: #c9903a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Jost', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1,h2,h3 { font-family: 'Cormorant Garamond', serif; }
+
+  .header { background: linear-gradient(135deg,#1a1508 0%,#0f0e0b 100%); border-bottom: 1px solid var(--border); padding: 24px 20px 16px; position: sticky; top:0; z-index:50; }
+  .header-eyebrow { font-size:10px; letter-spacing:4px; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
+  .header-title-row { display:flex; align-items:baseline; gap:12px; }
+  .header h1 { font-size:22px; font-weight:400; color:var(--gold2); }
+  .save-status { font-size:11px; color:#6aaa6a; opacity:0; transition:opacity 0.3s; }
+  .save-status.show { opacity:1; }
+  .header-stats { font-size:11px; color:var(--muted); margin-top:4px; }
+  .tabs { display:flex; gap:4px; margin-top:14px; }
+  .tab { background:transparent; border:1px solid var(--border); color:var(--muted); padding:7px 18px; border-radius:4px; cursor:pointer; font-size:11px; letter-spacing:2px; text-transform:uppercase; font-family:'Jost',sans-serif; transition:all 0.2s; }
+  .tab.active { background:var(--gold); border-color:var(--gold); color:var(--bg); font-weight:500; }
+
+  .main { padding:16px; max-width:600px; margin:0 auto; }
+
+  .pantry-intro { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:20px; font-size:13px; color:var(--muted); line-height:1.6; }
+  .pantry-category { margin-bottom:22px; }
+  .cat-label { font-size:10px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:8px; }
+  .pantry-item { display:flex; align-items:center; gap:12px; background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:11px 14px; cursor:pointer; transition:background 0.15s,border-color 0.15s; user-select:none; margin-bottom:5px; }
+  .pantry-item.checked { background:var(--green2); border-color:var(--green3); }
+  .checkbox { width:20px; height:20px; border-radius:4px; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .pantry-item.checked .checkbox { background:var(--green); border-color:var(--green); }
+  .checkbox-tick { color:#fff; font-size:12px; display:none; }
+  .pantry-item.checked .checkbox-tick { display:block; }
+  .pantry-label { font-size:14px; color:var(--text2); transition:all 0.15s; }
+  .pantry-item.checked .pantry-label { color:#6aaa6a; text-decoration:line-through; }
+
+  .filter-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .filter-btn { background:transparent; border:1px solid #2a3a30; color:#507060; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:11px; font-family:'Jost',sans-serif; transition:all 0.15s; }
+  .filter-btn.active-method { background:#1a3a5a; border-color:#2a6aaa; color:#7ab8e8; }
+  .filter-btn.active-cuisine { color:#fff; }
+
+  .recipe-list { display:flex; flex-direction:column; gap:9px; }
+  .recipe-card { border-radius:10px; padding:13px 15px; cursor:pointer; border-left-width:4px; border-left-style:solid; border-top:1px solid; border-right:1px solid; border-bottom:1px solid; }
+  .card-top { display:flex; justify-content:space-between; align-items:flex-start; }
+  .card-badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:5px; }
+  .badge { font-size:9px; letter-spacing:1px; text-transform:uppercase; padding:2px 8px; border-radius:10px; }
+  .badge-cuisine { color:#fff; }
+  .badge-method { border:1px solid; }
+  .card-name { font-family:'Cormorant Garamond',serif; font-size:16px; margin-bottom:2px; }
+  .card-meta { font-size:11px; color:var(--muted2); }
+  .card-missing { font-size:11px; color:var(--muted2); margin-top:5px; }
+  .ready-badge { background:#1e3a1e; border:1px solid #3a6a3a; color:#6aaa6a; font-size:11px; padding:4px 10px; border-radius:20px; white-space:nowrap; flex-shrink:0; margin-left:10px; }
+  .need-badge { background:#2a1e10; border:1px solid #5a3a1a; color:#aa8a5a; font-size:11px; padding:4px 10px; border-radius:20px; white-space:nowrap; flex-shrink:0; margin-left:10px; }
+
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal { background:var(--bg2); border:1px solid var(--border); border-radius:16px 16px 0 0; padding:0 0 40px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; transform:translateY(20px); transition:transform 0.2s; }
+  .modal-overlay.open .modal { transform:translateY(0); }
+  .modal-photo { width:100%; height:200px; object-fit:cover; border-radius:16px 16px 0 0; }
+  .modal-photo-placeholder { width:100%; height:180px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:center; font-size:48px; }
+  .modal-body { padding:20px 20px 0; }
+  .modal-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+  .modal-close { background:none; border:none; color:var(--muted); font-size:24px; cursor:pointer; line-height:1; padding:0 4px; position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.5); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
+  .modal-title { font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--gold2); font-weight:400; margin:6px 0 4px; }
+  .modal-time { font-size:12px; color:var(--muted); }
+  .modal-notice { border-radius:8px; padding:10px 13px; margin-bottom:14px; font-size:12px; line-height:1.5; }
+  .notice-ninja { background:#0e1a2a; border:1px solid #1a3a5a; color:var(--ninja-text); }
+  .notice-bbq { background:#1a0e05; border:1px solid #5a3010; color:#c97a3a; }
+  .section-label { font-size:10px; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:8px; margin-top:16px; }
+  .ing-grid { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:4px; }
+  .ing-tag { padding:4px 10px; border-radius:20px; font-size:12px; }
+  .ing-have { background:#1e2e1e; border:1px solid #3a7a3a; color:#7aaa7a; }
+  .ing-missing { background:var(--red2); border:1px solid #7a3a3a; color:var(--red); }
+  .steps-list { margin-bottom:16px; }
+  .step { display:flex; gap:11px; margin-bottom:14px; }
+  .step-num { width:28px; height:28px; border-radius:50%; background:var(--gold); color:var(--bg); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:500; flex-shrink:0; margin-top:1px; }
+  .step-text { font-size:14px; line-height:1.7; color:var(--text2); }
+  .step-detail { font-size:12px; color:var(--muted); margin-top:3px; font-style:italic; }
+  .tip-box { background:#1e1a0e; border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; padding:11px 14px; margin-bottom:16px; }
+  .tip-label { font-size:10px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:3px; }
+  .tip-text { font-size:13px; color:#a89870; line-height:1.5; }
+  .ninja-tip { background:#0e1a2a; border:1px solid #1a3a5a; border-radius:10px; padding:11px 14px; margin-bottom:14px; font-size:12px; color:var(--ninja-text); line-height:1.6; }
+
+  @media (max-width:400px) { .header h1 { font-size:19px; } .main { padding:12px; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">The Antoinette Kitchen</div>
+  <div class="header-title-row">
+    <h1 id="dishCount">Your Pantry System</h1>
+    <span class="save-status" id="saveStatus">✓ Saved</span>
+  </div>
+  <div class="header-stats" id="headerStats">Loading...</div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('recipes')">🍳 Recipes</button>
+    <button class="tab" onclick="showTab('pantry')">🛒 Pantry</button>
+  </div>
+</div>
+
+<div class="main">
+  <div id="recipesTab"></div>
+  <div id="pantryTab" style="display:none"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalContent" style="position:relative"></div>
+</div>
+
+<script>
+const PANTRY = {
+  proteins: ["Chicken","Beef mince","Fish","Canned tuna","Sausage (smoked or jerk)","Canned corned beef"],
+  starches: ["Pasta (spaghetti/penne)","Brown rice","Sweet potato","Heavy Dark Pumpkin (Kabocha)","Quinoa","Pita bread","Whole wheat bread"],
+  aromatics: ["Onion","Garlic","Chicken stock","Fresh ginger"],
+  vegetables: ["Bell peppers","Tomatoes","Cabbage","Carrots","Spinach","Mushrooms","Eggplant","Bok choy (Pak Choi)","Canned corn","Canned chickpeas / kidney beans","Canned tomatoes","Sweet pickles"],
+  dairy: ["Butter","Parmesan / hard cheese","Heavy cream / coconut cream","Mozzarella / melting cheese","Yogurt (plain)"],
+  pantry: ["Cooking oil","Olive oil","Soy sauce","Coconut milk (canned)","Ketchup","BBQ sauce","Mayonnaise","Vinegar","Sugar","Cornstarch","Flour","Honey","Pizza / pasta sauce (jarred)","Sweet and sour sauce (bottled)","Doubanjiang (chili bean paste)"],
+  seasonings: ["All-purpose seasoning","Slap Ya Mama seasoning","Black pepper","Paprika","Cumin","Italian seasoning","Curry powder","Taco seasoning","Thyme","Chili flakes / scotch bonnet","Chili powder","Garam masala","Five spice","Garlic powder","Salt","Bay leaves","Tomato paste","Jerk seasoning (jarred)","Baking powder","Mustard","Cinnamon"],
+  extras: ["Eggs","Lime / lemon","Sesame oil (small bottle)"]
+};
+
+const CUISINE_COLORS = {
+  Italian:"#c9542a", Asian:"#2a7ac9", "Middle Eastern":"#c9a22a",
+  American:"#5a2ac9", Fusion:"#2ac987", Caribbean:"#c92a7a", Mexican:"#3aaa3a", Jamaican:"#d4820a"
+};
+
+const METHOD_ICONS = { Stovetop:"🔥", "Stovetop + Air Fryer":"🔥💨", "BBQ Grill":"🪵", Ninja:"🥘", "No Cook":"🥪" };
+
+const PHOTO_SEARCH = {
+  "Beef Bolognese":"beef bolognese pasta",
+  "Chicken Stir-Fry":"chicken stir fry vegetables",
+  "Chinese Salt & Pepper Chicken":"chinese salt pepper chicken crispy",
+  "Creamy Chicken Pasta":"creamy chicken pasta",
+  "Chicken Shawarma Bowl":"chicken shawarma bowl quinoa",
+  "Chickpea & Spinach Stew":"chickpea spinach stew",
+  "Pan Sticky Chicken Wings":"sticky glazed chicken wings pan",
+  "Shakshuka":"shakshuka eggs tomato",
+  "Chicken Curry":"chicken curry coconut",
+  "Beef Stir-Fried Noodles":"beef stir fried noodles",
+  "Chicken & Mushroom Cream Sauce":"chicken mushroom cream pasta",
+  "Garlic Butter Fish":"garlic butter fish pan",
+  "Quinoa Chicken Bowl":"quinoa chicken bowl",
+  "Sweet Potato & Chickpea Coconut Stew":"sweet potato chickpea stew",
+  "Fish in Coconut Tomato Sauce":"fish coconut tomato sauce",
+  "Soy-Ginger Chicken":"soy ginger chicken",
+  "Pan BBQ Chicken":"pan bbq chicken",
+  "Spiced Pan Chicken Thighs":"spiced pan chicken thighs",
+  "Pan Beef with BBQ Sauce":"beef bbq sauce pan",
+  "Pan BBQ Fish":"pan bbq fish",
+  "BBQ Chicken (Grill)":"jamaican bbq grilled chicken",
+  "Sweet & Sour Chicken":"chinese sweet sour chicken",
+  "Crispy Fried Chicken with Sauce":"crispy fried chicken sauce",
+  "Teriyaki Chicken":"teriyaki chicken glaze",
+  "Mexican Chicken Bowl":"mexican chicken bowl rice beans",
+  "Fried Egg & Cheese Sandwich":"fried egg cheese sandwich",
+  "Tuna Fish Sandwich":"tuna salad sandwich",
+  "Air Fryer Chicken Thighs":"air fryer chicken thighs crispy",
+  "Slow-Cook Beef Stew":"beef stew slow cooker",
+  "Slow-Cook Beef Chili":"beef chili slow cooker",
+  "Slow-Cook Chicken Curry":"chicken curry slow cooker",
+  "Slow-Cook Coconut Chicken Stew":"coconut chicken stew",
+  "Slow-Cook Coconut Fish Stew":"coconut fish stew",
+  "Jamaican Fried Chicken":"jamaican fried chicken crispy",
+  "Jerk Chicken":"jamaican jerk chicken",
+  "Jamaican Oxtail":"jamaican oxtail stew",
+  "Sausage & Cabbage":"sausage cabbage skillet",
+  "Corned Beef & Cabbage":"corned beef cabbage",
+  "Chinese Five Spice Glazed Chicken":"chinese five spice chicken glaze",
+  "Sweet Potato Corned Beef Casserole":"sweet potato corned beef casserole",
+  "Mapo Eggplant":"mapo eggplant sichuan",
+  "Chicken Tikka Masala":"chicken tikka masala",
+  "Chinese Battered Sweet & Sour Chicken":"chinese battered sweet sour chicken",
+  "Chinese Battered Salt & Pepper Wings":"chinese salt pepper wings crispy",
+  "Homemade Beef Burger":"homemade beef burger",
+  "Pita Bread Pizza":"pita bread pizza",
+  "Jamaican Escovitch Fish":"jamaican escovitch fish",
+  "Garlic Bok Choy":"garlic bok choy stir fry"
+};
+
+const RECIPES = [
+  // ── JAMAICAN ──────────────────────────────────────────────
+  {
+    id:1, name:"Jamaican Fried Chicken", cuisine:"Jamaican", method:"Stovetop", ninja:false,
+    time:"35 min active + 2–12 hrs marinating", serve:"Brown rice, festival, or sweet potato",
+    emoji:"🍗",
+    ingredients:["Chicken","Flour","Baking powder","All-purpose seasoning","Paprika","Garlic powder","Thyme","Chili flakes / scotch bonnet","Black pepper","Salt","Lime / lemon","Vinegar","Cooking oil"],
+    steps:[
+      {t:"Wash the chicken",d:"Squeeze 1 whole lime into a bowl of cold water, add 2 tbsp vinegar. Submerge chicken pieces and wash well. Rinse under cold water and pat completely dry with paper towel. Dry chicken is essential for crispy coating."},
+      {t:"Season the chicken",d:"In a bowl mix: 2 tsp all-purpose seasoning, 1 tsp garlic powder, 1½ tsp paprika, 1 tsp thyme, 1 tsp black pepper, ½ tsp chili flakes, 1 tsp salt. Rub all over every piece of chicken, getting under the skin where possible. Cover bowl with cling wrap and refrigerate minimum 2 hours — overnight gives the best flavour."},
+      {t:"Make the coating flour",d:"When ready to fry, mix in a wide bowl: 1½ cups flour, 1 tsp baking powder, 1 tsp paprika, 1 tsp garlic powder, 1 tsp salt, ½ tsp black pepper, ½ tsp thyme. Stir well to combine."},
+      {t:"Coat the chicken",d:"Take each piece of marinated chicken and press firmly into the seasoned flour. Turn over and press again. Shake off any excess. Place coated pieces on a plate and let rest 5 minutes — this helps the coating stick during frying."},
+      {t:"Fry the chicken",d:"Pour cooking oil into a deep pan — oil should come at least halfway up the chicken pieces. Heat on medium-high. Test oil by dropping a pinch of flour in — it should sizzle immediately. Add chicken pieces one at a time, do not crowd the pan — fry in 2 batches if needed. DO NOT touch or move for 7-8 minutes. You will see a deep golden crust forming. Flip once, cook another 7-8 minutes until deep golden brown all over."},
+      {t:"Drain and rest",d:"Remove chicken with tongs and place on paper towel. Let rest 3-4 minutes before eating. The inside should show no pink when cut at the thickest point and juices should run clear."},
+      {t:"Air fryer alternative",d:"Instead of shallow frying: coat chicken as above, spray or brush lightly with cooking oil. Air fry at 190°C for 22-25 minutes, flipping halfway. The result is slightly less greasy with a still-crispy coating. For extra crunch, do a quick 2 minute shallow fry first to set the crust, then finish in air fryer 15 minutes."}
+    ],
+    tip:"The baking powder in the coating flour is the Jamaican secret — it makes the crust lighter and crispier than just flour alone. Don't skip it."
+  },
+  {
+    id:2, name:"Jerk Chicken", cuisine:"Jamaican", method:"Stovetop", ninja:false,
+    time:"20 min active + 2–12 hrs marinating", serve:"Brown rice, quinoa, or sweet potato",
+    emoji:"🌶️",
+    ingredients:["Chicken","Jerk seasoning (jarred)","Lime / lemon","Garlic","All-purpose seasoning","Cooking oil","Black pepper"],
+    steps:[
+      {t:"Wash and prep chicken",d:"Wash chicken in lime water (squeeze 1 lime into cold water), rinse well, pat completely dry with paper towel."},
+      {t:"Marinate",d:"Score chicken pieces with a knife — make 2-3 deep cuts into the thickest parts. This lets the seasoning penetrate deep. Rub 3-4 tbsp jarred jerk seasoning all over, add 2 minced garlic cloves, 1 tsp all-purpose seasoning, 1 tsp black pepper, squeeze of lime. Mix well with hands. Cover and refrigerate minimum 2 hours — overnight is best."},
+      {t:"Cook the chicken",d:"Heat 2 tbsp cooking oil in pan on medium-high. Add chicken skin-side down. DO NOT move for 6-7 minutes until skin is deeply charred and caramelised — this is the authentic jerk flavour. Flip and cook another 6-7 minutes."},
+      {t:"Finish low and slow",d:"Turn heat to LOW, cover with lid, cook another 10 minutes to ensure chicken is fully cooked through. Cut at thickest point — juices should run clear, no pink inside."},
+      {t:"Rest and serve",d:"Rest 5 minutes before serving. Squeeze a little lime over the top."},
+      {t:"Air fryer alternative",d:"After marinating, place chicken in air fryer at 190°C for 22-25 minutes flipping halfway. Brush any remaining marinade over the chicken halfway through. You get beautiful char marks and the jerk flavour develops really well — almost as good as the grill."}
+    ],
+    tip:"The char is not burning — it's flavour. Real jerk chicken is supposed to have those dark caramelised edges. Don't be afraid of the colour."
+  },
+  {
+    id:3, name:"Jamaican Oxtail", cuisine:"Jamaican", method:"Ninja", ninja:true,
+    time:"6–8 hrs (hands-off)", serve:"Brown rice or white rice",
+    emoji:"🫕",
+    ingredients:["Beef mince","Onion","Garlic","All-purpose seasoning","Thyme","Bay leaves","Black pepper","Salt","Soy sauce","Tomato paste","Ketchup","Chili flakes / scotch bonnet","Cooking oil","Canned chickpeas / kidney beans","Chicken stock"],
+    steps:[
+      {t:"Season the meat",d:"Note: traditionally oxtail uses bone-in oxtail pieces from the butcher — if you can get these, use them. Otherwise use thick beef stew pieces. Season generously with: 2 tsp all-purpose seasoning, 1 tsp black pepper, 1 tsp thyme, salt. Let sit 15 minutes minimum."},
+      {t:"Brown the meat",d:"Set Ninja to Stovetop mode, heat 2 tbsp oil on high. Brown meat in batches — 3-4 minutes per side until deeply browned all over. Do not crowd. Set browned meat aside. This step builds the deep flavour."},
+      {t:"Build the base",d:"In same Ninja pot, sauté 1 large diced onion and 4 minced garlic cloves on medium for 3 minutes. Add 2 tbsp tomato paste + 2 tbsp ketchup + 1 tbsp soy sauce, stir and cook 2 minutes."},
+      {t:"Slow cook",d:"Return meat to pot. Add 1 cup chicken stock, 2 bay leaves, 1 sprig thyme, chili flakes to taste. Stir everything together. Switch Ninja to Slow Cook LOW. Cook 6-8 hours — meat should be completely fall-apart tender and sauce thick and glossy."},
+      {t:"Add butter beans",d:"In last 30 minutes of cooking, add 1 drained can of kidney beans or butter beans. Stir in, replace lid, continue cooking."},
+      {t:"Final seasoning",d:"Remove bay leaves. Taste sauce and adjust salt and pepper. Sauce should be thick, dark and rich. Serve over white or brown rice."}
+    ],
+    tip:"Oxtail needs long slow heat to break down the collagen into that signature sticky, rich sauce. Don't rush it — 8 hours is better than 6. The longer it cooks the better it gets."
+  },
+  {
+    id:4, name:"BBQ Chicken (Grill)", cuisine:"Jamaican", method:"BBQ Grill", ninja:false,
+    time:"35 min", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🔥",
+    ingredients:["Chicken","Ketchup","Garlic","Lime / lemon","All-purpose seasoning","Slap Ya Mama seasoning","Black pepper","Thyme","Chili flakes / scotch bonnet","Cooking oil"],
+    steps:[
+      {t:"Make the glaze",d:"In a small bowl mix: 3 tbsp ketchup, 2 minced garlic cloves, juice of 1 lime, 1 tsp chili flakes, 1 tsp Slap Ya Mama. Stir well and set aside."},
+      {t:"Season the chicken",d:"Rub chicken pieces with: 1 tsp cooking oil, 1 tsp all-purpose seasoning, 1 tsp black pepper, ½ tsp thyme. Let sit 10 minutes while grill preheats."},
+      {t:"Grill",d:"Preheat grill on medium heat 10 minutes. Place chicken on grill, close lid. Cook 6-7 minutes per side without touching. You should see clear grill marks form before flipping."},
+      {t:"Apply glaze",d:"In the last 5 minutes only, brush the glaze generously over the chicken. Watch closely — the ketchup caramelises fast and can go from perfect to burnt in under a minute."},
+      {t:"Rest",d:"Remove from grill, rest 5 minutes. The glaze will set into a sticky, caramelised coating."}
+    ],
+    tip:"Glaze goes on at the end only — the sugar in ketchup burns if you add it early. That last 5 minutes is all you need for that beautiful sticky finish."
+  },
+
+  // ── ITALIAN ───────────────────────────────────────────────
+  {
+    id:5, name:"Beef Bolognese", cuisine:"Italian", method:"Stovetop", ninja:false,
+    time:"45 min", serve:"Pasta",
+    emoji:"🍝",
+    ingredients:["Beef mince","Pasta (spaghetti/penne)","Onion","Garlic","Canned tomatoes","Tomato paste","Olive oil","Carrots","Italian seasoning","Black pepper","Salt","Chicken stock"],
+    steps:[
+      {t:"Sauté the base",d:"Heat 2 tbsp olive oil in a wide pan on medium heat. Add 1 large finely diced onion and 2 finely diced or grated carrots. Cook 5 minutes stirring until softened and slightly golden. Add 4 minced garlic cloves, cook 1 more minute."},
+      {t:"Brown the mince",d:"Turn heat to medium-high. Add 500g beef mince. Break up immediately with a wooden spoon into small pieces. Cook 6-7 minutes, stirring often, until no pink remains and mince is lightly browned. Do not let it steam — if it releases too much water, turn heat up."},
+      {t:"Add tomato paste",d:"Push mince to sides of pan. Add 2 tbsp tomato paste to centre of pan, cook in the oil for 2 minutes stirring — this removes the raw taste and deepens the flavour."},
+      {t:"Add tomatoes and simmer",d:"Pour in 1 can chopped tomatoes + ½ cup chicken stock. Add 2 tsp Italian seasoning, 1 tsp black pepper, 1 tsp salt. Stir everything together. Bring to boil then reduce to low. Simmer uncovered 20-25 minutes stirring occasionally until sauce thickens."},
+      {t:"Cook pasta and combine",d:"Cook pasta in well-salted boiling water according to package — al dente means still has a slight bite. Reserve 1 cup pasta water before draining. Add drained pasta to sauce, toss well. Add a splash of pasta water to loosen if too thick."}
+    ],
+    tip:"Grating the carrot fine makes it melt into the sauce and adds natural sweetness — it disappears completely but makes a big difference to the flavour."
+  },
+  {
+    id:6, name:"Creamy Chicken Pasta", cuisine:"Italian", method:"Stovetop", ninja:false,
+    time:"30 min", serve:"Pasta",
+    emoji:"🍝",
+    ingredients:["Chicken","Pasta (spaghetti/penne)","Heavy cream / coconut cream","Garlic","Onion","Parmesan / hard cheese","Butter","Chicken stock","Black pepper","Salt","Italian seasoning"],
+    steps:[
+      {t:"Cook the pasta",d:"Boil pasta in well-salted water until al dente — about 2 minutes less than the packet says. Before draining, scoop out 1 full cup of pasta water and set aside. Drain pasta."},
+      {t:"Cook the chicken",d:"Season 400g chicken breast with salt, pepper and a pinch of Italian seasoning. Melt 1 tbsp butter in a wide pan on medium-high. Add chicken, cook 5-6 minutes per side without moving until golden. Remove, rest 3 minutes, then slice into strips."},
+      {t:"Make the sauce",d:"In the same pan on medium heat, add 1 more tbsp butter. Add 1 small finely diced onion, cook 3 minutes. Add 4 minced garlic cloves, cook 1 minute. Pour in 150ml heavy cream and 100ml chicken stock. Add 1 tsp Italian seasoning, ½ tsp black pepper. Simmer 4-5 minutes until sauce coats the back of a spoon."},
+      {t:"Combine",d:"Add pasta to the sauce and toss well on medium heat. If sauce is too thick, add pasta water a little at a time. Add sliced chicken on top. Grate or crumble cheese generously over everything."}
+    ],
+    tip:"Never add all the pasta water at once — add it slowly, a splash at a time. The starch in it thickens the sauce naturally and helps it cling to the pasta."
+  },
+  {
+    id:7, name:"Chicken & Mushroom Cream Sauce", cuisine:"Italian", method:"Stovetop", ninja:false,
+    time:"30 min", serve:"Pasta",
+    emoji:"🍝",
+    ingredients:["Chicken","Mushrooms","Heavy cream / coconut cream","Garlic","Butter","Chicken stock","Thyme","Black pepper","Salt","Pasta (spaghetti/penne)","Italian seasoning"],
+    steps:[
+      {t:"Sear the chicken",d:"Season 400g chicken with salt, pepper and Italian seasoning. Melt 1 tbsp butter in pan on medium-high. Cook chicken 5-6 min per side until golden. Remove, rest, slice into strips."},
+      {t:"Brown the mushrooms",d:"In the same pan, add 1 more tbsp butter on HIGH heat. Add 250g sliced mushrooms in a single layer. DO NOT stir for 3 minutes — let them brown undisturbed. Then stir and cook 2 more minutes. They should be deep golden, not grey and soggy."},
+      {t:"Build the sauce",d:"Reduce to medium. Add 4 minced garlic cloves, cook 1 minute. Add 150ml cream + 100ml chicken stock + 1 tsp thyme + ½ tsp Italian seasoning + black pepper. Simmer 4-5 minutes until slightly thickened."},
+      {t:"Finish",d:"Return sliced chicken to pan. Add cooked pasta and toss everything together. Grate cheese over the top before serving."}
+    ],
+    tip:"The mushrooms MUST be browned not steamed — that deep golden colour is meaty, rich flavour. If they look wet and pale, your heat was too low."
+  },
+  {
+    id:8, name:"Garlic Butter Fish", cuisine:"Italian", method:"Stovetop", ninja:false,
+    time:"15 min", serve:"Steamed sweet potato or kabocha pumpkin",
+    emoji:"🐟",
+    ingredients:["Fish","Butter","Garlic","Lime / lemon","Italian seasoning","Salt","Black pepper","Cooking oil"],
+    steps:[
+      {t:"Prep the fish",d:"Pat fish fillets completely dry with paper towel — this is the most important step for a good sear. Season both sides with salt, pepper and Italian seasoning."},
+      {t:"Heat the pan",d:"Heat 1 tbsp cooking oil + 1 tbsp butter in a pan on medium-high until the butter foam starts to subside. The pan must be hot before the fish goes in."},
+      {t:"Fry the fish",d:"Lay fish away from you into the pan. Press down gently with a spatula for the first 30 seconds. DO NOT touch or move for 3-4 minutes. The fish will release naturally when ready to flip — if it sticks, it's not ready. Flip carefully, cook 2-3 more minutes on other side."},
+      {t:"Add garlic",d:"In the last 60 seconds, add 3 minced garlic cloves to the pan around the fish. Let it sizzle in the butter — do not let it burn. Tilt the pan and spoon the garlic butter over the fish repeatedly for 30 seconds."},
+      {t:"Finish",d:"Remove fish carefully. Squeeze lime juice all over immediately. Serve with steamed sweet potato or kabocha pumpkin."}
+    ],
+    tip:"Dry fish = crispy crust. Wet fish = it steams and sticks. Pat it completely dry every single time."
+  },
+
+  // ── ASIAN ─────────────────────────────────────────────────
+  {
+    id:9, name:"Chicken Stir-Fry", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"20 min", serve:"Brown rice or quinoa",
+    emoji:"🥘",
+    ingredients:["Chicken","Bell peppers","Cabbage","Onion","Garlic","Soy sauce","Sesame oil (small bottle)","Fresh ginger","Chili flakes / scotch bonnet","Cooking oil"],
+    steps:[
+      {t:"Prep everything before you start",d:"Slice 400g chicken breast into thin strips. Slice 1 bell pepper, ½ small cabbage, 1 onion into similar sized pieces. Mince 4 garlic cloves and 1 tbsp fresh ginger. Mix sauce: 3 tbsp soy sauce + 1 tsp sesame oil + 1 tsp chili flakes. Have everything ready — stir fry moves fast."},
+      {t:"Sear the chicken",d:"Heat pan on HIGH until very hot. Add 2 tbsp cooking oil. Add chicken strips in a single layer — do not stir for 2 minutes. Let them sear until white on bottom, then stir-fry 2 more minutes. Remove chicken to a plate."},
+      {t:"Stir-fry vegetables",d:"Same pan, still on HIGH. Add vegetables. Stir-fry constantly for 3 minutes — they should be slightly charred at edges but still have crunch. Add garlic and ginger in last 30 seconds."},
+      {t:"Combine and sauce",d:"Return chicken to pan. Pour sauce over everything. Toss constantly on high heat for 60-90 seconds until sauce coats everything and has slightly reduced. Serve immediately over rice or quinoa."}
+    ],
+    tip:"High heat throughout — if your pan isn't smoking hot the vegetables will steam and go soggy instead of getting that slightly charred takeout flavour."
+  },
+  {
+    id:10, name:"Chinese Salt & Pepper Chicken", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"30 min", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🍗",
+    ingredients:["Chicken","Onion","Bell peppers","Garlic","Chili flakes / scotch bonnet","Black pepper","Garlic powder","Salt","Cooking oil","Soy sauce","Fresh ginger"],
+    steps:[
+      {t:"Season and rest",d:"Cut 500g chicken into bite-sized pieces. Season with: 1 tsp salt, 1½ tsp black pepper, 1 tsp garlic powder. Toss well and let sit 10 minutes. The generous black pepper is key to this dish."},
+      {t:"Fry the chicken",d:"Pour enough cooking oil into pan to come 1cm up the sides. Heat on medium-high until a piece of chicken sizzles immediately when added. Fry chicken in 2 batches — do not crowd. Cook 5-6 minutes turning occasionally until golden and crispy all over. Drain on paper towel."},
+      {t:"Pour off the oil",d:"Carefully pour off most of the oil from the pan, leaving just a very thin coating. Return pan to HIGH heat."},
+      {t:"Flash-fry the aromatics",d:"Add to the hot pan: 1 large onion sliced into rings, 1 bell pepper sliced, 4 minced garlic cloves, 1 tbsp grated ginger, 1 tsp chili flakes. Stir-fry on HIGH for exactly 2 minutes — fast and hot. The vegetables should be slightly charred at edges."},
+      {t:"Combine",d:"Return crispy chicken to pan. Add 1 tbsp soy sauce. Toss everything together on high heat for 60 seconds. Serve immediately — the longer it sits the less crispy the chicken will be."}
+    ],
+    tip:"Two separate frying stages is the secret — crispy chicken first, aromatics second. If you add everything together the steam from the vegetables destroys the crunch."
+  },
+  {
+    id:11, name:"Chicken Curry", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"35 min", serve:"Brown rice or quinoa",
+    emoji:"🍛",
+    ingredients:["Chicken","Coconut milk (canned)","Onion","Garlic","Fresh ginger","Curry powder","Tomato paste","Chicken stock","Cooking oil","Salt","Chili flakes / scotch bonnet"],
+    steps:[
+      {t:"Sauté the base",d:"Heat 2 tbsp cooking oil in a wide pot on medium. Add 1 large finely diced onion. Cook 5 minutes until soft and lightly golden. Add 4 minced garlic cloves and 1 tbsp grated ginger. Cook 2 more minutes."},
+      {t:"Bloom the spices",d:"Add 2 tbsp curry powder + 1 tbsp tomato paste directly to the oil in the pan. Stir and fry for 2 full minutes — this is the most important step. The spices must cook in the oil to release their full flavour. You will smell them open up."},
+      {t:"Add chicken",d:"Add 500g chicken pieces (thighs are better than breast here — more flavour). Stir to coat in the spice mixture. Cook 3-4 minutes on medium-high until lightly sealed on outside."},
+      {t:"Add liquids and simmer",d:"Pour in 1 can coconut milk + ½ cup chicken stock + chili flakes to taste + 1 tsp salt. Stir well. Bring to boil then reduce to medium-low. Simmer uncovered 20 minutes stirring occasionally until chicken is fully cooked and sauce has thickened."},
+      {t:"Check and serve",d:"Taste and adjust salt. Sauce should be creamy and thick enough to coat the back of a spoon. Serve over brown rice or quinoa."}
+    ],
+    tip:"Frying the curry powder in oil before adding liquid is the single most important step — it's called blooming and it transforms the flavour completely. Never add curry powder directly to liquid."
+  },
+  {
+    id:12, name:"Beef Stir-Fried Noodles", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Noodles (pasta)",
+    emoji:"🍜",
+    ingredients:["Beef mince","Pasta (spaghetti/penne)","Soy sauce","Garlic","Fresh ginger","Cabbage","Carrots","Sesame oil (small bottle)","Chili flakes / scotch bonnet","Cooking oil"],
+    steps:[
+      {t:"Cook the pasta",d:"Boil spaghetti in salted water until al dente — 1-2 minutes less than package says. Drain immediately and toss with 1 tsp sesame oil to prevent sticking. Set aside."},
+      {t:"Cook the beef mince",d:"Heat pan on HIGH. Add 1 tbsp cooking oil. Add 400g beef mince — break up immediately with spoon. Cook 5-6 minutes on high until browned and slightly crispy at edges. Remove to plate."},
+      {t:"Stir-fry vegetables",d:"Same pan on HIGH. Add 2 cups shredded cabbage + 1 julienned carrot + 4 minced garlic cloves. Stir-fry 3 minutes until slightly wilted but still with crunch."},
+      {t:"Combine everything",d:"Return beef to pan. Add noodles. Pour over: 3 tbsp soy sauce + 1 tbsp grated ginger + 1 tsp chili flakes + 1 tsp sesame oil. Toss everything vigorously on HIGH heat for 90 seconds until sauce coats everything evenly."}
+    ],
+    tip:"Spaghetti is a perfect lo mein substitute — most people genuinely cannot tell the difference. The sesame oil toss immediately after draining is essential to stop clumping."
+  },
+  {
+    id:13, name:"Soy-Ginger Chicken", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Brown rice or quinoa",
+    emoji:"🍗",
+    ingredients:["Chicken","Soy sauce","Fresh ginger","Garlic","Sesame oil (small bottle)","Lime / lemon","Onion","Chili flakes / scotch bonnet","Cooking oil"],
+    steps:[
+      {t:"Score and season",d:"Score chicken pieces with a knife — 2-3 cuts into the thickest parts. Rub with 2 minced garlic cloves + 1 tbsp grated ginger + pinch of salt. Let sit 10 minutes."},
+      {t:"Pan-fry",d:"Heat 2 tbsp cooking oil in pan on medium-high. Add chicken, cook 5-6 minutes per side without moving until cooked through and golden. Cut at thickest point to check — no pink inside."},
+      {t:"Make the sauce",d:"In a small bowl mix: 3 tbsp soy sauce + 1 tsp sesame oil + juice of ½ lime + ½ tsp chili flakes + 1 tsp grated ginger."},
+      {t:"Finish",d:"Remove pan from heat. Pour sauce over chicken in the pan. Let it sizzle and coat the chicken. Serve immediately over rice or quinoa with sauce poured over."}
+    ],
+    tip:"Remove the pan from heat before adding the sauce — soy sauce burns easily if added to an extremely hot pan and turns bitter."
+  },
+  {
+    id:14, name:"Sweet & Sour Chicken", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"35 min", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🍗",
+    ingredients:["Chicken","Bell peppers","Onion","Tomatoes","Sweet and sour sauce (bottled)","Garlic","Cooking oil","Cornstarch","Salt","Black pepper","Flour"],
+    steps:[
+      {t:"Prepare the chicken",d:"Cut 500g chicken into bite-sized chunks. Season with salt and pepper. Toss in 2 tbsp flour + 1 tsp cornstarch mixed together — coat each piece lightly. This creates the crispy coating."},
+      {t:"Fry the chicken",d:"Heat enough oil to shallow fry in pan on medium-high. Fry chicken in batches, do not crowd, 4-5 minutes turning until golden and crispy all over. Drain on paper towel and set aside."},
+      {t:"Stir-fry vegetables",d:"Pour off most oil, leave 1 tbsp. On medium-high, fry 1 sliced onion + 1 sliced bell pepper + 2 minced garlic cloves for 2-3 minutes until slightly softened but still with crunch."},
+      {t:"Add sauce and combine",d:"Add 1 roughly chopped tomato to the vegetables, cook 1 minute. Pour in ½ bottle sweet and sour sauce (adjust to taste). Stir to coat vegetables. Return crispy chicken to pan, toss gently to coat everything in sauce. Serve immediately."}
+    ],
+    tip:"Add the crispy chicken to the sauce at the very last second and serve immediately — the longer it sits in the sauce the softer the coating gets."
+  },
+  {
+    id:15, name:"Teriyaki Chicken", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🍗",
+    ingredients:["Chicken","Soy sauce","Sugar","Garlic","Fresh ginger","Vinegar","Cornstarch","Cooking oil","Sesame oil (small bottle)","Lime / lemon"],
+    steps:[
+      {t:"Make teriyaki sauce",d:"In a small bowl whisk together: 3 tbsp soy sauce + 2 tbsp sugar + 1 tsp vinegar + 1 tsp cornstarch + 2 minced garlic cloves + 1 tsp grated ginger. Stir until sugar and cornstarch are fully dissolved. Set aside."},
+      {t:"Pan-fry chicken",d:"Heat 2 tbsp cooking oil in pan on medium-high. Add chicken pieces, cook 5-6 minutes per side without moving until golden brown and cooked through. Remove from pan, rest 3 minutes."},
+      {t:"Make the glaze",d:"Wipe excess oil from pan with paper towel. Return to medium heat. Pour in the teriyaki sauce. It will start to bubble immediately. Stir constantly for 60-90 seconds — sauce will thicken and turn glossy."},
+      {t:"Glaze and finish",d:"Return chicken to pan, turn to coat all sides in the glaze for 1 minute on medium. Drizzle ½ tsp sesame oil over the top, squeeze lime. Serve with sauce spooned over."}
+    ],
+    tip:"The cornstarch makes the sauce go glossy like the restaurant version. Without it the sauce stays thin and watery. Don't skip it."
+  },
+  {
+    id:16, name:"Slow-Cook Chicken Curry", cuisine:"Asian", method:"Ninja", ninja:true,
+    time:"6–7 hrs (hands-off)", serve:"Brown rice or quinoa",
+    emoji:"🍛",
+    ingredients:["Chicken","Sweet potato","Coconut milk (canned)","Onion","Garlic","Fresh ginger","Curry powder","Paprika","Chili flakes / scotch bonnet","Chicken stock","Tomato paste","Salt"],
+    steps:[
+      {t:"Build the base",d:"Set Ninja to Stovetop mode. Heat 2 tbsp oil. Sauté 1 diced onion 3-4 minutes. Add 4 minced garlic cloves + 1 tbsp grated ginger, cook 1 minute. Add 2 tbsp curry powder + 1 tbsp tomato paste + 1 tsp paprika. Fry in the oil 2 minutes stirring constantly."},
+      {t:"Add chicken",d:"Add 600g chicken pieces to the pot. Stir to coat completely in the spice mixture. Cook 3 minutes on medium."},
+      {t:"Add remaining ingredients",d:"Add 1 can coconut milk + ½ cup chicken stock + 2 cups cubed sweet potato + chili flakes to taste + 1 tsp salt. Stir everything together."},
+      {t:"Slow cook",d:"Switch Ninja to Slow Cook LOW. Cover with lid. Cook 6-7 hours. Do not open lid during cooking."},
+      {t:"Shred and serve",d:"Remove chicken pieces. Use two forks to shred the meat apart. Return shredded chicken to the sauce and stir in. The chicken should fall apart effortlessly. Serve over rice or quinoa."}
+    ],
+    tip:"Always shred the chicken and stir it back into the sauce — it becomes one with the sauce and the texture is completely different from serving whole pieces."
+  },
+  {
+    id:17, name:"Chinese Five Spice Glazed Chicken", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"30 min + 30 min marinating", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🍗",
+    ingredients:["Chicken","Five spice","Honey","Soy sauce","Garlic","Fresh ginger","Cooking oil","Lime / lemon","Sugar","Cornstarch"],
+    steps:[
+      {t:"Make the marinade and glaze",d:"Mix together: 2 tbsp soy sauce + 1 tbsp honey + 1 tsp five spice + 2 minced garlic cloves + 1 tsp grated ginger + 1 tsp sugar + juice of ½ lime. Divide in half — use half to marinate chicken, save other half for glazing."},
+      {t:"Marinate",d:"Score chicken pieces deeply with a knife. Pour half the marinade over chicken, rub in well. Cover and let sit minimum 30 minutes — 2 hours is better."},
+      {t:"Pan-fry",d:"Heat 2 tbsp cooking oil in pan on medium-high. Add chicken, cook 5-6 minutes per side until cooked through and deep golden. The marinade will caramelise on the surface — this is good."},
+      {t:"Make the glaze",d:"Remove chicken from pan. Add the reserved marinade to the pan on medium heat. Add ½ tsp cornstarch. Stir constantly 60-90 seconds until thick and glossy."},
+      {t:"Coat and serve",d:"Return chicken to pan, turn to coat in glaze on all sides. Serve with glaze drizzled over."},
+      {t:"Air fryer alternative",d:"After marinating, air fry chicken at 180°C for 20-22 minutes flipping halfway. In last 3 minutes, brush the reserved glaze over the chicken and air fry the final minutes — it caramelises beautifully in the air fryer."}
+    ],
+    tip:"Five spice is very powerful — 1 tsp is enough. More than that and it becomes medicinal tasting. Less is more with this spice."
+  },
+  {
+    id:18, name:"Chinese Battered Sweet & Sour Chicken", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"40 min", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🍗",
+    ingredients:["Chicken","Flour","Cornstarch","Baking powder","Eggs","Sweet and sour sauce (bottled)","Bell peppers","Onion","Garlic","Cooking oil","Salt","Black pepper"],
+    steps:[
+      {t:"Make the batter",d:"In a bowl mix: ½ cup flour + ¼ cup cornstarch + ½ tsp baking powder + ½ tsp salt + 1 beaten egg + 6 tbsp cold water. Whisk until smooth. Batter should coat the back of a spoon — not too thick, not too thin. Let rest 5 minutes."},
+      {t:"Prep chicken",d:"Cut 500g chicken breast into bite-sized chunks. Season with salt and pepper. Pat dry with paper towel."},
+      {t:"Batter and fry",d:"Heat enough cooking oil for shallow-deep frying in a wide pan on medium-high — oil should come 2-3cm up the pan. Dip chicken pieces into batter one at a time, let excess drip off, slide gently into hot oil. Fry in batches — do not crowd. Cook 4-5 minutes per side until batter is golden and crispy. Drain on paper towel."},
+      {t:"Stir-fry vegetables",d:"In a separate pan, heat 1 tbsp oil on medium-high. Fry 1 sliced onion + 1 sliced bell pepper + 2 minced garlic cloves for 2-3 minutes."},
+      {t:"Combine with sauce",d:"Add sweet and sour sauce to vegetables (amount to taste — start with ⅓ bottle). Heat through 1 minute. Add crispy battered chicken, toss gently to coat. Serve immediately."}
+    ],
+    tip:"Cold water in the batter keeps it light and crispy — warm water activates the gluten and makes it doughy. Always use cold water, even add an ice cube if you want extra crunch."
+  },
+  {
+    id:19, name:"Chinese Battered Salt & Pepper Wings", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"45 min", serve:"As a main with rice or as a snack",
+    emoji:"🍗",
+    ingredients:["Chicken","Flour","Cornstarch","Baking powder","Eggs","Onion","Bell peppers","Garlic","Fresh ginger","Chili flakes / scotch bonnet","Black pepper","Salt","Soy sauce","Cooking oil"],
+    steps:[
+      {t:"Make the batter",d:"Mix: ½ cup flour + ¼ cup cornstarch + ½ tsp baking powder + ½ tsp salt + 1 beaten egg + 6 tbsp cold water. Whisk smooth. Rest 5 minutes."},
+      {t:"Season the wings",d:"Pat chicken wings completely dry. Season with: 1 tsp salt + 1½ tsp coarsely ground black pepper + ½ tsp garlic powder. The black pepper is the star — be generous."},
+      {t:"Batter and fry",d:"Dip each wing into batter, let excess drip off. Fry in hot oil (medium-high) in batches — do not crowd. Cook 7-8 minutes turning occasionally until batter is deep golden and crispy. Drain on paper towel."},
+      {t:"Flash-fry the aromatics",d:"In a separate clean pan on HIGH heat with 1 tbsp oil: fry 1 sliced onion + 1 sliced bell pepper + 4 minced garlic cloves + 1 tbsp grated ginger + 1 tsp chili flakes for 2 minutes. Fast and hot — edges should char slightly."},
+      {t:"Combine",d:"Add crispy wings to the aromatics pan. Add 1 tbsp soy sauce. Toss on high heat 30-60 seconds. Serve immediately — the longer it sits the less crispy the wings will be."},
+      {t:"Air fryer alternative for wings",d:"Instead of frying: coat wings in batter, place in air fryer at 200°C for 24-26 minutes flipping halfway. Spray lightly with oil before cooking. Then do the aromatics step on the stovetop and toss the air fried wings through them. Very crispy result with much less oil."}
+    ],
+    tip:"For extra crispiness, fry the wings twice — first fry at medium heat to cook through, second fry at high heat for 2 minutes to crisp up. This is the restaurant technique."
+  },
+  {
+    id:20, name:"Mapo Eggplant", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Brown rice or quinoa",
+    emoji:"🍆",
+    ingredients:["Eggplant","Doubanjiang (chili bean paste)","Garlic","Fresh ginger","Soy sauce","Cooking oil","Sesame oil (small bottle)","Cornstarch","Sugar","Chicken stock","Chili flakes / scotch bonnet","Onion"],
+    steps:[
+      {t:"Prep the eggplant",d:"Cut 2 medium eggplants into bite-sized chunks. Sprinkle with ½ tsp salt, toss, let sit 10 minutes. This draws out moisture and bitterness. Pat dry with paper towel."},
+      {t:"Fry the eggplant",d:"Heat 3 tbsp cooking oil in pan on medium-high. Add eggplant — it will absorb oil immediately. Fry 5-6 minutes turning until golden and slightly soft. Remove to plate."},
+      {t:"Make the sauce base",d:"In same pan, 1 tbsp oil on medium. Add 1 tbsp doubanjiang (chili bean paste) — fry 1 minute, it will turn the oil red. Add 1 diced onion + 4 minced garlic cloves + 1 tbsp grated ginger. Cook 2 minutes."},
+      {t:"Build the sauce",d:"Add ½ cup chicken stock + 1 tbsp soy sauce + 1 tsp sugar. Stir together. Mix 1 tsp cornstarch with 2 tbsp cold water to make a slurry, pour in. Sauce will thicken in about 1 minute."},
+      {t:"Combine and finish",d:"Return eggplant to pan, toss to coat in sauce. Cook 2 more minutes. Drizzle ½ tsp sesame oil over the top before serving."}
+    ],
+    tip:"Doubanjiang is the soul of this dish — it's salty, spicy and fermented which gives that deep savoury flavour you can't recreate any other way. Start with 1 tbsp and adjust to taste — it's salty so you may not need extra soy sauce."
+  },
+
+  // ── MIDDLE EASTERN ────────────────────────────────────────
+  {
+    id:21, name:"Chicken Shawarma Bowl", cuisine:"Middle Eastern", method:"Stovetop", ninja:false,
+    time:"30 min + 15 min marinating", serve:"Quinoa or brown rice",
+    emoji:"🥙",
+    ingredients:["Chicken","Quinoa","Garlic","Lime / lemon","Paprika","Cumin","All-purpose seasoning","Garam masala","Olive oil","Tomatoes","Onion","Spinach","Cabbage","Sweet pickles","Yogurt (plain)","Ketchup"],
+    steps:[
+      {t:"Marinate the chicken",d:"Mix marinade: 2 tbsp olive oil + 4 minced garlic cloves + 2 tsp cumin + 2 tsp paprika + 1 tsp garam masala + 1 tsp all-purpose seasoning + juice of 1 lime + ½ tsp salt. Coat chicken completely. Marinate minimum 15 minutes, longer is better."},
+      {t:"Cook the chicken",d:"Heat a pan on medium-high with no extra oil. Add marinated chicken skin-side down. Cook 5-6 minutes WITHOUT moving — you want char marks and caramelised edges. Flip, cook another 5 minutes. Rest 5 minutes then slice thin."},
+      {t:"Make the yogurt sauce",d:"Mix: 3 tbsp plain yogurt + 1 tbsp ketchup + ½ tsp cumin + 1 minced garlic clove + squeeze of lime + pinch of salt. Stir well. Taste and adjust — add more ketchup for sweetness, more lime for tang."},
+      {t:"Cook quinoa",d:"Rinse ¾ cup quinoa under cold water. Add to pot with 1½ cups water + pinch of salt. Bring to boil, reduce to low, cover, cook 12 minutes. Remove from heat, leave covered 5 minutes, then fluff with a fork."},
+      {t:"Build the bowl",d:"Base layer: quinoa. Then: sliced chicken, shredded fresh cabbage, chopped tomatoes, diced onion, fresh spinach, sweet pickles. Drizzle yogurt sauce generously over everything. Squeeze extra lime over the top."}
+    ],
+    tip:"The yogurt sauce is what ties this whole bowl together — be generous with it. The sweet pickles add a crucial acid and crunch that balances the rich spiced chicken."
+  },
+  {
+    id:22, name:"Chickpea & Spinach Stew", cuisine:"Middle Eastern", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Brown rice or quinoa",
+    emoji:"🫘",
+    ingredients:["Canned chickpeas / kidney beans","Spinach","Canned tomatoes","Onion","Garlic","Cumin","Paprika","Olive oil","Chicken stock","Chili flakes / scotch bonnet","Salt"],
+    steps:[
+      {t:"Sauté the base",d:"Heat 2 tbsp olive oil in a pot on medium. Add 1 large diced onion, cook 4-5 minutes until soft and lightly golden. Add 4 minced garlic cloves, cook 1 minute."},
+      {t:"Bloom the spices",d:"Add 2 tsp cumin + 2 tsp paprika + chili flakes to taste directly to the oil. Stir and cook 1-2 minutes until fragrant."},
+      {t:"Add chickpeas and tomatoes",d:"Add 1 drained can of chickpeas + 1 can chopped tomatoes + ½ cup chicken stock + 1 tsp salt. Stir everything together. Bring to boil then reduce to medium-low. Simmer 15 minutes."},
+      {t:"Thicken and finish",d:"Using the back of a spoon or a potato masher, roughly mash about ⅓ of the chickpeas in the pot. This thickens the sauce naturally. Add large handful of spinach, stir in until wilted — about 1 minute. Taste and adjust seasoning."}
+    ],
+    tip:"Mashing some of the chickpeas is the trick to getting a thick, hearty sauce without needing cream or flour. It's the oldest thickening technique in the book."
+  },
+  {
+    id:23, name:"Shakshuka", cuisine:"Middle Eastern", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Quinoa or whole wheat bread on the side",
+    emoji:"🍳",
+    ingredients:["Eggs","Canned tomatoes","Bell peppers","Onion","Garlic","Cumin","Paprika","Chili flakes / scotch bonnet","Olive oil","Salt"],
+    steps:[
+      {t:"Build the sauce",d:"Heat 2 tbsp olive oil in a wide pan with a lid on medium. Add 1 diced onion + 1 diced bell pepper. Cook 5 minutes until softened. Add 4 minced garlic cloves, cook 1 minute. Add 2 tsp cumin + 2 tsp paprika + chili flakes to taste, stir and cook 1 minute."},
+      {t:"Add tomatoes",d:"Pour in 1 can chopped tomatoes. Add 1 tsp salt. Stir together. Simmer on medium-low 10 minutes until sauce has thickened and reduced slightly. It should not be watery — if too thin, cook 5 more minutes."},
+      {t:"Add eggs",d:"Use a spoon to make 3-4 wells in the sauce. Crack 1 egg into each well carefully. Season eggs with a pinch of salt and pepper."},
+      {t:"Cover and cook",d:"Cover pan with lid immediately. Cook on medium-low heat 5-7 minutes. Check at 5 minutes — whites should be fully set and opaque, yolks still slightly jiggly. Remove from heat immediately."}
+    ],
+    tip:"The eggs carry over from the heat even after you turn it off — remove from the heat the moment the whites are just set if you want runny yolks. Overcooked shakshuka yolks are a tragedy."
+  },
+  {
+    id:24, name:"Quinoa Chicken Bowl", cuisine:"Middle Eastern", method:"Stovetop", ninja:false,
+    time:"20 min", serve:"Quinoa",
+    emoji:"🥗",
+    ingredients:["Quinoa","Tomatoes","Onion","Spinach","Lime / lemon","Olive oil","Garlic","Salt","Black pepper","Chicken","Cumin","Paprika"],
+    steps:[
+      {t:"Cook quinoa",d:"Rinse ¾ cup quinoa under cold water until water runs clear. Add to pot with 1½ cups water + pinch of salt. Bring to boil, reduce to low, cover, cook exactly 12 minutes. Off heat, leave covered 5 minutes. Fluff with fork and let cool slightly."},
+      {t:"Cook spiced chicken strips",d:"Slice 400g chicken breast into thin strips. Season with: 1 tsp cumin + 1 tsp paprika + 2 minced garlic cloves + 1 tbsp olive oil + ½ tsp salt + ½ tsp black pepper. Heat pan on medium-high. Cook strips 3-4 minutes per side until golden and cooked through."},
+      {t:"Prep vegetables",d:"Dice 2 tomatoes, finely dice ½ red onion, roughly chop large handful of spinach."},
+      {t:"Build the bowl",d:"Add quinoa to bowl. Layer vegetables on top. Add warm chicken strips. Drizzle with 1 tbsp olive oil + squeeze of lime + pinch of salt. Toss gently or leave in layers."}
+    ],
+    tip:"Slightly cooled quinoa with warm chicken is a better experience than everything piping hot — the temperature contrast makes the dish feel more interesting."
+  },
+  {
+    id:25, name:"Spiced Pan Chicken Thighs", cuisine:"Middle Eastern", method:"Stovetop", ninja:false,
+    time:"30 min", serve:"Quinoa, brown rice, sweet potato, or kabocha pumpkin",
+    emoji:"🍗",
+    ingredients:["Chicken","Garlic","Lime / lemon","Cumin","Paprika","Curry powder","Olive oil","Salt","Black pepper","Chili flakes / scotch bonnet"],
+    steps:[
+      {t:"Make the marinade",d:"Mix together: 2 tbsp olive oil + 4 minced garlic cloves + 2 tsp cumin + 2 tsp paprika + 1 tsp curry powder + ½ tsp chili flakes + juice of 1 lime + 1 tsp salt + ½ tsp black pepper. Rub all over chicken thighs. Marinate 30 minutes minimum."},
+      {t:"Sear skin side",d:"Place chicken skin-side down in a dry pan (no extra oil) on medium-high. DO NOT move for 6-7 minutes. The fat from the skin renders into the pan and the skin becomes deeply golden and crispy — just like a grill."},
+      {t:"Cook through",d:"Flip chicken. Cook 5-6 more minutes on medium. To check doneness, cut at the thickest point — juices must run completely clear with no pink."},
+      {t:"Rest",d:"Rest chicken 5 minutes off heat before serving. This lets the juices redistribute."}
+    ],
+    tip:"Starting skin-side down in a dry pan is the trick — you don't need oil because the chicken fat renders and bastes the chicken in its own fat. The result is crispier than adding oil."
+  },
+
+  // ── AMERICAN ──────────────────────────────────────────────
+  {
+    id:26, name:"Pan BBQ Chicken", cuisine:"American", method:"Stovetop", ninja:false,
+    time:"30 min", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🍗",
+    ingredients:["Chicken","BBQ sauce","Garlic powder","Paprika","All-purpose seasoning","Black pepper","Salt","Cooking oil","Lime / lemon"],
+    steps:[
+      {t:"Season the chicken",d:"Rub chicken pieces with: 1 tsp garlic powder + 1 tsp paprika + 1 tsp all-purpose seasoning + ½ tsp black pepper + ½ tsp salt. Let sit 5 minutes."},
+      {t:"Sear",d:"Heat 2 tbsp cooking oil in pan on medium-high. Add chicken, cook 5-6 minutes per side without moving until cooked through and golden on both sides."},
+      {t:"Apply BBQ glaze",d:"Turn heat to LOW. Pour 3-4 tbsp BBQ sauce over chicken in pan. Use a brush or spoon to coat all sides. Flip chicken once — let sauce caramelise 2 minutes per side on low heat. Watch carefully — sauce burns fast."},
+      {t:"Rest and serve",d:"Rest 5 minutes. Squeeze lime over the top. The sauce should be sticky and caramelised on the surface."}
+    ],
+    tip:"The move from high to low heat when the sauce goes on is essential — BBQ sauce has sugar that burns black in 30 seconds on high heat. Low and slow for the glaze."
+  },
+  {
+    id:27, name:"Pan Beef with BBQ Sauce", cuisine:"American", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🥩",
+    ingredients:["Beef mince","Bell peppers","Onion","BBQ sauce","Garlic powder","Paprika","Soy sauce","Cooking oil","Black pepper","Salt"],
+    steps:[
+      {t:"Marinate the mince",d:"Mix 500g beef mince with: 1 tbsp soy sauce + 1 tsp garlic powder + 1 tsp paprika + pinch of black pepper. Let sit 10-15 minutes."},
+      {t:"Cook the mince",d:"Heat 1 tbsp cooking oil in pan on HIGH. Add seasoned mince — break apart with spoon. Cook 5-6 minutes on high, stirring, until browned and slightly crispy at edges. Remove to plate."},
+      {t:"Sauté vegetables",d:"In same pan on medium-high, cook 1 sliced onion + 1 sliced bell pepper for 3-4 minutes until softened and slightly charred."},
+      {t:"Combine with sauce",d:"Return beef to pan. Pour 3-4 tbsp BBQ sauce over everything. Turn heat to LOW. Toss everything together until sauce coats the beef and vegetables and becomes sticky — about 2 minutes."}
+    ],
+    tip:"High heat for the beef, low heat for the sauce. This is the rule for anything BBQ sauce is involved in."
+  },
+  {
+    id:28, name:"Crispy Fried Chicken with Sauce", cuisine:"American", method:"Stovetop", ninja:false,
+    time:"35 min", serve:"Brown rice, quinoa, sweet potato, or kabocha pumpkin",
+    emoji:"🍗",
+    ingredients:["Chicken","Garlic powder","Paprika","Slap Ya Mama seasoning","All-purpose seasoning","Black pepper","Salt","Cooking oil","BBQ sauce","Chili flakes / scotch bonnet","Lime / lemon","Flour","Eggs"],
+    steps:[
+      {t:"Season and coat",d:"Season 500g chicken pieces with: 1 tsp each of garlic powder, paprika, Slap Ya Mama, all-purpose seasoning, salt and black pepper. Beat 2 eggs in a bowl. Mix 1 cup flour with same spices on a plate. Dip chicken in egg then press firmly into flour."},
+      {t:"Rest the coating",d:"Place coated chicken on a plate and let sit 8-10 minutes. This is important — resting helps the coating adhere and become crispier when fried."},
+      {t:"Shallow fry",d:"Heat enough cooking oil to come halfway up chicken on medium-high. Test with flour pinch — must sizzle. Add chicken, DO NOT move for 6-7 minutes. Flip once, cook 6-7 more minutes until deep golden all over. Drain on paper towel."},
+      {t:"Make dipping sauce",d:"Mix: 3 tbsp BBQ sauce + ½ tsp chili flakes + squeeze of lime. Stir together."},
+      {t:"Air fryer alternative",d:"After coating and resting, spray or brush chicken pieces with cooking oil. Air fry at 190°C for 20-22 minutes flipping halfway. Less greasy than shallow frying with a still excellent crispy crust. Great option for a lighter version."}
+    ],
+    tip:"Resting the coated chicken before frying is the professional technique — the flour coating bonds to the egg and becomes one unified crust rather than flaking off in the oil."
+  },
+  {
+    id:29, name:"Mexican Chicken Bowl", cuisine:"Mexican", method:"Stovetop", ninja:false,
+    time:"30 min", serve:"Brown rice or quinoa",
+    emoji:"🌮",
+    ingredients:["Chicken","Taco seasoning","Canned chickpeas / kidney beans","Bell peppers","Onion","Garlic","Tomatoes","Lime / lemon","Cooking oil","Cumin","Salt","Black pepper","Spinach"],
+    steps:[
+      {t:"Season the chicken",d:"Coat 400g chicken breast with: 2 tsp taco seasoning + 1 tsp cumin + ½ tsp salt + ½ tsp black pepper. Rub well on all sides."},
+      {t:"Cook the chicken",d:"Heat 2 tbsp cooking oil in pan on medium-high. Cook chicken 5-6 minutes per side until cooked through and slightly charred at edges. Rest 5 minutes then slice into strips."},
+      {t:"Cook the beans and vegetables",d:"In same pan, sauté 1 diced onion + 1 sliced bell pepper + 3 minced garlic cloves on medium for 3 minutes. Add 1 drained can of beans. Season with ½ tsp taco seasoning + pinch of salt. Cook 3-4 minutes until beans are warmed through and slightly crisped."},
+      {t:"Build the bowl",d:"Base: brown rice or quinoa. Add bean and vegetable mixture. Top with sliced chicken strips. Add diced fresh tomatoes + handful of spinach. Squeeze generous amount of lime juice over everything — this is not optional, it lifts the whole dish."}
+    ],
+    tip:"The lime juice at the end is not a garnish — it's a key flavour component that brightens and ties all the elements together. Be very generous with it."
+  },
+  {
+    id:30, name:"Homemade Beef Burger", cuisine:"American", method:"Stovetop", ninja:false,
+    time:"20 min", serve:"Whole wheat bread",
+    emoji:"🍔",
+    ingredients:["Beef mince","Onion","Garlic","Whole wheat bread","Ketchup","Mayonnaise","Mustard","Eggs","Salt","Black pepper","Garlic powder","Cooking oil","Tomatoes","Spinach"],
+    steps:[
+      {t:"Make the patties",d:"Mix 500g beef mince with: ½ finely diced onion + 2 minced garlic cloves + 1 tsp garlic powder + 1 tsp salt + ½ tsp black pepper + 1 egg (binds the patty). Mix with hands until combined. Divide into 4 portions, shape into round patties about 1cm thick. Press a small indent in the centre of each with your thumb — this stops them puffing up when cooking."},
+      {t:"Cook the patties",d:"Heat 1 tbsp cooking oil in pan on medium-high. Add patties — DO NOT press down with spatula (this squeezes out all the juices). Cook 4-5 minutes per side without moving. They're ready to flip when they release naturally from the pan."},
+      {t:"Toast the bread",d:"In the last 2 minutes, add bread slices to the pan to toast lightly in the beef fat. This adds flavour."},
+      {t:"Build the burger",d:"Bottom bread: spread mayo. Add patty. Top with: sliced fresh tomato, spinach leaves, diced onion. Top bread: spread ketchup + mustard. Press together and eat immediately."}
+    ],
+    tip:"Never press the burger down with a spatula while cooking — this is the number one mistake. All the juicy flavour is in those liquids and you're squeezing them straight into the pan."
+  },
+  {
+    id:31, name:"Slow-Cook Beef Stew", cuisine:"American", method:"Ninja", ninja:true,
+    time:"7–8 hrs (hands-off)", serve:"Brown rice or quinoa",
+    emoji:"🫕",
+    ingredients:["Beef mince","Carrots","Sweet potato","Onion","Garlic","Thyme","Chicken stock","Bay leaves","Canned tomatoes","Tomato paste","Black pepper","Salt"],
+    steps:[
+      {t:"Brown the mince",d:"Set Ninja to Stovetop. Heat 1 tbsp oil on medium-high. Add 600g beef mince, break apart with spoon. Cook 5-6 minutes until browned. Remove to plate."},
+      {t:"Build the base",d:"In same Ninja pot, sauté 1 large diced onion + 4 minced garlic cloves + 1 tsp thyme on medium for 3 minutes. Add 2 tbsp tomato paste, stir and cook 2 minutes."},
+      {t:"Add everything",d:"Return browned mince to pot. Add: 2 cups diced sweet potato + 2 diced carrots + 1 can chopped tomatoes + 1½ cups chicken stock + 2 bay leaves + 1 tsp salt + ½ tsp black pepper. Stir well."},
+      {t:"Slow cook",d:"Switch Ninja to Slow Cook LOW. Cover, cook 7-8 hours. Do not open lid."},
+      {t:"Finish",d:"Remove bay leaves. Stir well — the mince and vegetables will have melded into a thick, hearty stew. Taste and adjust seasoning."}
+    ],
+    tip:"With mince instead of chunks, this becomes a thick hearty meat and vegetable stew rather than a chunky stew — still delicious, different texture. Start it before you leave in the morning."
+  },
+  {
+    id:32, name:"Slow-Cook Beef Chili", cuisine:"American", method:"Ninja", ninja:true,
+    time:"4–5 hrs (hands-off)", serve:"Brown rice or quinoa",
+    emoji:"🌶️",
+    ingredients:["Beef mince","Canned chickpeas / kidney beans","Canned tomatoes","Onion","Garlic","Bell peppers","Tomato paste","Cumin","Paprika","Chili flakes / scotch bonnet","Bay leaves","Cooking oil","Salt","Black pepper"],
+    steps:[
+      {t:"Brown the mince",d:"Set Ninja to Stovetop, heat 1 tbsp oil on medium-high. Add 500g beef mince — break up with spoon immediately. Cook 5-6 minutes until browned all over. No pink should remain."},
+      {t:"Add aromatics and spices",d:"Add 1 large diced onion + 1 diced bell pepper + 4 minced garlic cloves to the mince. Cook 3 minutes. Add 2 tbsp tomato paste + 2 tsp cumin + 2 tsp paprika + chili flakes to taste. Stir and cook 2 minutes."},
+      {t:"Add remaining ingredients",d:"Add 1 can chopped tomatoes + 1 drained can kidney beans + 2 bay leaves + 1 tsp salt + ½ tsp black pepper. Stir everything together well."},
+      {t:"Slow cook",d:"Switch Ninja to Slow Cook LOW. Cover, cook 4-5 hours. (Mince cooks faster than beef chunks so 4-5 hours is enough.)"},
+      {t:"Finish",d:"Remove bay leaves. Stir and taste — sauce should be thick and dark. Adjust salt and chili. Serve over rice or quinoa."}
+    ],
+    tip:"This chili is genuinely better the next day — the flavours deepen overnight. Make a big batch and refrigerate, it reheats perfectly on the stovetop with a splash of water."
+  },
+  {
+    id:33, name:"Air Fryer Chicken Thighs", cuisine:"American", method:"Stovetop + Air Fryer", ninja:false,
+    time:"25 min", serve:"Brown rice, quinoa, or sweet potato",
+    emoji:"🍗",
+    ingredients:["Chicken","Garlic powder","Paprika","All-purpose seasoning","Cooking oil","Lime / lemon","Black pepper","Salt"],
+    steps:[
+      {t:"Season",d:"Mix: 1 tsp garlic powder + 1 tsp paprika + 1 tsp all-purpose seasoning + ½ tsp black pepper + ½ tsp salt. Rub all over chicken thighs with 1 tbsp cooking oil."},
+      {t:"Sear on stovetop",d:"Heat pan on medium-high. Place chicken skin-side down — no extra oil needed. Sear 4 minutes without moving until skin is golden and fat has rendered. This step makes the skin crispier than air fryer alone."},
+      {t:"Finish in air fryer",d:"Transfer chicken to air fryer at 190°C. Cook 12-14 minutes until internal temperature reaches 75°C or juices run completely clear when pierced."},
+      {t:"Rest",d:"Rest 5 minutes. Squeeze lime over the top before serving."}
+    ],
+    tip:"You can skip the stovetop sear and go straight into the air fryer — just add 4-5 extra minutes. But the sear makes a noticeable difference to the skin crispiness."
+  },
+  {
+    id:34, name:"Pan BBQ Fish", cuisine:"American", method:"Stovetop", ninja:false,
+    time:"20 min", serve:"Brown rice, sweet potato, or kabocha pumpkin",
+    emoji:"🐟",
+    ingredients:["Fish","BBQ sauce","Garlic powder","Lime / lemon","Paprika","Salt","Black pepper","Cooking oil"],
+    steps:[
+      {t:"Prep the fish",d:"Pat fish fillets completely dry with paper towel — both sides. Season with: ½ tsp garlic powder + ½ tsp paprika + ½ tsp salt + ¼ tsp black pepper on both sides."},
+      {t:"Pan-fry",d:"Heat 2 tbsp cooking oil in pan on medium-high until very hot. Add fish fillets away from you. Press down gently for 30 seconds. DO NOT touch for 3-4 minutes. Fish releases naturally when the crust is ready — if it sticks, wait."},
+      {t:"Flip and glaze",d:"Flip carefully with a spatula. Cook 2-3 minutes on other side. Turn heat to LOW. Brush 1-2 tbsp BBQ sauce on top of fish only. Let cook 1 minute — just enough to warm and caramelise slightly."},
+      {t:"Finish",d:"Remove from pan. Squeeze lime generously over the top."}
+    ],
+    tip:"BBQ sauce on one side only — putting it on both sides and flipping causes it to burn on the pan. Top side glazing only."
+  },
+
+  // ── FUSION ────────────────────────────────────────────────
+  {
+    id:35, name:"Sweet Potato & Chickpea Coconut Stew", cuisine:"Fusion", method:"Stovetop", ninja:false,
+    time:"30 min", serve:"Brown rice or quinoa",
+    emoji:"🍲",
+    ingredients:["Sweet potato","Canned chickpeas / kidney beans","Coconut milk (canned)","Onion","Garlic","Fresh ginger","Curry powder","Chili flakes / scotch bonnet","Chicken stock","Cooking oil","Tomato paste","Salt"],
+    steps:[
+      {t:"Sauté and spice",d:"Heat 2 tbsp cooking oil in pot on medium. Add 1 large diced onion, cook 4-5 minutes. Add 4 minced garlic cloves + 1 tbsp grated ginger, cook 2 minutes. Add 1½ tbsp curry powder + 1 tbsp tomato paste. Fry in oil 2 minutes."},
+      {t:"Add sweet potato",d:"Add 3 cups cubed sweet potato (2cm chunks) + ¾ cup chicken stock + 1 tsp salt + chili flakes to taste. Stir well. Cover and cook 10 minutes on medium until sweet potato is just tender."},
+      {t:"Add chickpeas and coconut milk",d:"Add 1 drained can chickpeas + 1 can coconut milk. Stir together. Simmer uncovered 12-15 minutes on medium-low until sauce has thickened."},
+      {t:"Thicken and serve",d:"Use back of spoon to mash some of the sweet potato and chickpeas against the side of the pot — this thickens the sauce naturally. Taste and adjust salt."}
+    ],
+    tip:"Your cheapest meal on the whole list — no meat needed, everything is pantry and produce. Just as filling as a meat dish thanks to the chickpeas and sweet potato."
+  },
+  {
+    id:36, name:"Fish in Coconut Tomato Sauce", cuisine:"Fusion", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Brown rice or quinoa",
+    emoji:"🐟",
+    ingredients:["Fish","Coconut milk (canned)","Canned tomatoes","Onion","Garlic","Fresh ginger","Chili flakes / scotch bonnet","Thyme","Cooking oil","Lime / lemon"],
+    steps:[
+      {t:"Build the sauce base",d:"Heat 2 tbsp cooking oil in wide pan on medium. Add 1 diced onion, cook 4 minutes. Add 4 minced garlic cloves + 1 tbsp grated ginger, cook 2 minutes. Add chili flakes + pinch of salt."},
+      {t:"Add tomatoes and coconut milk",d:"Pour in 1 can chopped tomatoes + 1 can coconut milk + 3 sprigs fresh thyme. Stir together. Bring to gentle simmer and cook 8-10 minutes until sauce has reduced slightly and flavours have melded."},
+      {t:"Add fish",d:"Gently slide fish pieces into the simmering sauce. Spoon sauce over the top of the fish. Cook on medium-low 7-8 minutes WITHOUT stirring — the fish will poach in the sauce and break apart if you stir."},
+      {t:"Finish",d:"Squeeze 1 lime over the top. Remove thyme sprigs. Taste sauce and adjust salt. Serve over rice or quinoa."}
+    ],
+    tip:"Do not stir once the fish is in. Poaching fish in sauce means gentle heat and no disturbance — it stays in beautiful pieces instead of breaking into flakes."
+  },
+  {
+    id:37, name:"Slow-Cook Coconut Chicken Stew", cuisine:"Fusion", method:"Ninja", ninja:true,
+    time:"6–7 hrs (hands-off)", serve:"Brown rice or quinoa",
+    emoji:"🍲",
+    ingredients:["Chicken","Sweet potato","Coconut milk (canned)","Onion","Garlic","Fresh ginger","Thyme","Chili flakes / scotch bonnet","Chicken stock","Canned tomatoes","Salt","Black pepper"],
+    steps:[
+      {t:"Add everything",d:"Place in Ninja pot: 600g chicken pieces + 1 diced onion + 4 minced garlic cloves + 1 tbsp grated ginger + 2 cups cubed sweet potato + 1 can chopped tomatoes + 1 can coconut milk + ½ cup chicken stock + 3 sprigs thyme + chili flakes + 1 tsp salt + ½ tsp black pepper."},
+      {t:"Slow cook",d:"Switch directly to Slow Cook LOW — no browning needed for this recipe. Cover, cook 6-7 hours."},
+      {t:"Shred the chicken",d:"Remove chicken pieces from pot. Shred apart with two forks — it should fall apart effortlessly. Return shredded chicken to the pot and stir into the sauce."},
+      {t:"Final seasoning",d:"Remove thyme sprigs. Taste and adjust salt. Serve over rice or quinoa."}
+    ],
+    tip:"This is your true zero-effort meal — everything goes in raw and the Ninja does all the work. Perfect for mornings when you want dinner ready when you get home."
+  },
+  {
+    id:38, name:"Slow-Cook Coconut Fish Stew", cuisine:"Fusion", method:"Ninja", ninja:true,
+    time:"3–4 hrs (hands-off)", serve:"Brown rice or quinoa",
+    emoji:"🐟",
+    ingredients:["Fish","Coconut milk (canned)","Canned tomatoes","Onion","Garlic","Fresh ginger","Chili flakes / scotch bonnet","Thyme","Sweet potato","Lime / lemon","Salt"],
+    steps:[
+      {t:"Build the base",d:"Set Ninja to Stovetop. Sauté 1 diced onion + 4 minced garlic cloves + 1 tbsp grated ginger in 2 tbsp oil for 3 minutes."},
+      {t:"Add sauce ingredients",d:"Add 1 can chopped tomatoes + 1 can coconut milk + 3 sprigs thyme + chili flakes + 2 cups cubed sweet potato + 1 tsp salt. Stir together. Switch to Slow Cook LOW."},
+      {t:"Cook base first",d:"Cook on LOW for 2.5 hours without the fish — sweet potato needs this time."},
+      {t:"Add fish",d:"Add fish pieces to the pot, nestling into the sauce. Replace lid. Cook final 1 hour on LOW only — fish is delicate and overcooks easily."},
+      {t:"Finish",d:"Squeeze 1 lime over the top. Remove thyme sprigs. Serve over rice or quinoa."}
+    ],
+    tip:"Fish goes in during the last hour ONLY — adding it at the beginning with everything else turns it to mush. The timing is essential for this recipe."
+  },
+
+  // ── INTERNATIONAL ─────────────────────────────────────────
+  {
+    id:39, name:"Chicken Tikka Masala", cuisine:"Fusion", method:"Stovetop", ninja:false,
+    time:"45 min + 1 hr marinating", serve:"Brown rice or quinoa",
+    emoji:"🍛",
+    ingredients:["Chicken","Yogurt (plain)","Garam masala","Canned tomatoes","Heavy cream / coconut cream","Onion","Garlic","Fresh ginger","Cumin","Paprika","Curry powder","Cooking oil","Salt","Chili flakes / scotch bonnet","Tomato paste","Butter"],
+    steps:[
+      {t:"Marinate the chicken",d:"Mix marinade: 4 tbsp plain yogurt + 2 tsp garam masala + 1 tsp cumin + 1 tsp paprika + 1 tsp curry powder + 3 minced garlic cloves + 1 tbsp grated ginger + 1 tsp salt + chili flakes to taste. Add 500g cubed chicken breast and coat completely. Cover and refrigerate minimum 1 hour — overnight is best."},
+      {t:"Char the chicken",d:"Heat 2 tbsp cooking oil in pan on HIGH. Add marinated chicken pieces in a single layer — do not crowd. Cook 3-4 minutes per side until charred at edges. The char is essential for authentic flavour. Remove to plate — chicken doesn't need to be fully cooked yet."},
+      {t:"Make the masala sauce",d:"In same pan on medium, melt 1 tbsp butter. Add 1 large finely diced onion — cook 8 minutes until deeply golden. Add 4 minced garlic cloves + 1 tbsp grated ginger, cook 2 minutes. Add 2 tbsp tomato paste + 1 tsp garam masala + 1 tsp cumin + 1 tsp paprika. Fry 2 minutes."},
+      {t:"Add tomatoes and simmer",d:"Add 1 can chopped tomatoes. Simmer 10 minutes on medium until sauce thickens and oil separates to the surface — this means the tomatoes are cooked properly. Pour in 100ml heavy cream or coconut cream. Stir together."},
+      {t:"Finish",d:"Return charred chicken to the sauce. Simmer 10 minutes on medium-low until chicken is fully cooked through and sauce is rich and thick. Taste and adjust salt."}
+    ],
+    tip:"The oil separating to the surface after the tomatoes cook down is a sign the sauce is ready for the cream — don't add cream before this point or the sauce won't have the right depth."
+  },
+
+  // ── QUICK & EASY ──────────────────────────────────────────
+  {
+    id:40, name:"Fried Egg & Cheese Sandwich", cuisine:"American", method:"Stovetop", ninja:false,
+    time:"10 min", serve:"Whole wheat bread",
+    emoji:"🥚",
+    ingredients:["Eggs","Parmesan / hard cheese","Whole wheat bread","Ketchup","Butter","Salt","Black pepper"],
+    steps:[
+      {t:"Toast the bread",d:"Lightly toast 2 slices of whole wheat bread. Set aside."},
+      {t:"Fry the egg",d:"Melt 1 tsp butter in a small pan on medium heat. Crack 1 egg in carefully. Season with pinch of salt and black pepper. For runny yolk: cook 2-3 minutes until white is fully set. For set yolk: cook 4 minutes."},
+      {t:"Melt the cheese",d:"Lay a slice or grating of cheese directly on top of the egg while still in the pan. Cover pan with a lid for 30 seconds — cheese will melt perfectly."},
+      {t:"Assemble",d:"Spread ketchup on one slice of toasted bread. Slide egg and cheese onto bread. Top with second slice. Eat immediately."}
+    ],
+    tip:"Your 10-minute rescue meal. Keep eggs, bread and cheese stocked and you always have something fast and satisfying regardless of what else is in the kitchen."
+  },
+  {
+    id:41, name:"Tuna Fish Sandwich", cuisine:"American", method:"No Cook", ninja:false,
+    time:"5 min", serve:"Whole wheat bread",
+    emoji:"🥪",
+    ingredients:["Canned tuna","Mayonnaise","Onion","Canned corn","Slap Ya Mama seasoning","Whole wheat bread","Black pepper"],
+    steps:[
+      {t:"Drain the tuna",d:"Open tuna can and drain all liquid thoroughly — press lid against tuna to squeeze out as much liquid as possible. Watery tuna makes a soggy sandwich."},
+      {t:"Mix the filling",d:"Add drained tuna to bowl. Add: 2 tbsp mayonnaise + 2 tbsp canned corn + 2 tbsp very finely diced onion + ½ tsp Slap Ya Mama seasoning + ¼ tsp black pepper. Mix well. Taste — add more mayo if too dry, more seasoning if needed."},
+      {t:"Assemble",d:"Spread tuna mixture generously onto whole wheat bread. Top with second slice. Optionally toast the bread first for extra texture."}
+    ],
+    tip:"Your fastest and cheapest meal on the list. Drain the tuna really well — this is the difference between a good tuna sandwich and a soggy disappointing one."
+  },
+
+  // ── NEW DISHES ────────────────────────────────────────────
+  {
+    id:42, name:"Sausage & Cabbage", cuisine:"Fusion", method:"Stovetop", ninja:false,
+    time:"25 min", serve:"Brown rice, quinoa, or as a standalone dish",
+    emoji:"🌭",
+    ingredients:["Sausage (smoked or jerk)","Cabbage","Onion","Garlic","Soy sauce","Cooking oil","Black pepper","Salt","Chili flakes / scotch bonnet","All-purpose seasoning"],
+    steps:[
+      {t:"Prep the sausage",d:"Slice sausage into coins about 1cm thick — or slice lengthways then into pieces. If using jerk sausage, note it will already be quite seasoned so go lighter on the salt."},
+      {t:"Brown the sausage",d:"Heat 1 tbsp cooking oil in a wide pan on medium-high. Add sausage slices in a single layer. Cook 3-4 minutes without moving until deeply browned on one side — this caramelisation is where the flavour comes from. Flip, cook 2 more minutes. Remove to plate."},
+      {t:"Cook the vegetables",d:"In the same pan (keep the sausage fat in the pan — this is flavour), add 1 sliced onion on medium. Cook 3 minutes. Add 4 minced garlic cloves, cook 1 minute. Add ½ head of cabbage sliced into strips. Season with pinch of salt, black pepper, chili flakes, all-purpose seasoning. Stir-fry on medium-high 4-5 minutes until cabbage is wilted but still has slight crunch."},
+      {t:"Combine",d:"Return sausage to pan. Add 1 tbsp soy sauce. Toss everything together on medium-high heat for 1-2 minutes until everything is coated and heated through."}
+    ],
+    tip:"Don't clean the pan between the sausage and vegetables — all that rendered fat and browned bits at the bottom of the pan is pure flavour. Let the onion and cabbage cook in it."
+  },
+  {
+    id:43, name:"Corned Beef & Cabbage", cuisine:"Caribbean", method:"Stovetop", ninja:false,
+    time:"20 min", serve:"Brown rice, quinoa, or whole wheat bread",
+    emoji:"🥩",
+    ingredients:["Canned corned beef","Cabbage","Onion","Garlic","Cooking oil","Black pepper","Chili flakes / scotch bonnet","All-purpose seasoning","Tomatoes","Ketchup"],
+    steps:[
+      {t:"Sauté the base",d:"Heat 1 tbsp cooking oil in pan on medium. Add 1 large sliced onion, cook 3-4 minutes until softened and lightly golden. Add 4 minced garlic cloves, cook 1 minute."},
+      {t:"Add tomatoes",d:"Add 1 diced tomato + 1 tbsp ketchup + ½ tsp all-purpose seasoning + ½ tsp black pepper + chili flakes to taste. Cook 2 minutes stirring until tomatoes start to break down."},
+      {t:"Add corned beef",d:"Open can of corned beef and break into chunks directly into the pan. Stir into the tomato and onion mixture, breaking it up as you go. Cook 4-5 minutes on medium, stirring occasionally."},
+      {t:"Add cabbage",d:"Add ¼ head of cabbage sliced into strips. Stir into the corned beef mixture. Cook 3-4 minutes until cabbage wilts but still has some texture. Taste and adjust seasoning."}
+    ],
+    tip:"Canned corned beef is already cooked and salted — taste before adding any extra salt. The ketchup adds a subtle sweetness that balances the saltiness of the corned beef."
+  },
+  {
+    id:44, name:"Sweet Potato Corned Beef Casserole", cuisine:"Caribbean", method:"Stovetop", ninja:false,
+    time:"35 min", serve:"As a complete dish — no extra starch needed",
+    emoji:"🍠",
+    ingredients:["Canned corned beef","Sweet potato","Onion","Garlic","Canned corn","Butter","Salt","Black pepper","Cinnamon","All-purpose seasoning","Cooking oil"],
+    steps:[
+      {t:"Make the corned beef base",d:"Heat 1 tbsp cooking oil in pan on medium. Sauté 1 diced onion 3-4 minutes. Add 3 minced garlic cloves, cook 1 minute. Add corned beef broken into pieces, stir together. Cook 3-4 minutes. Add 3 tbsp drained canned corn + ½ tsp all-purpose seasoning + ½ tsp black pepper. Stir and cook 2 minutes. Remove from heat and set aside."},
+      {t:"Make the sweet potato mash",d:"Peel and cube 600g sweet potato. Boil in salted water 15-20 minutes until very soft when pierced with a fork. Drain well. Return to pot, mash with: 2 tbsp butter + ¼ tsp cinnamon + ½ tsp salt + black pepper. Mash until very smooth."},
+      {t:"Layer and serve",d:"Serve corned beef mixture as the base layer in a bowl or plate. Spoon the buttery cinnamon sweet potato mash generously on top. The heat from the corned beef will warm the mash."},
+      {t:"Optional finish",d:"For a more finished presentation, drag a fork across the mash surface in a pattern before serving."}
+    ],
+    tip:"The cinnamon in the sweet potato mash is subtle but transforms it completely — it adds warmth without tasting sweet. Use just ¼ tsp, not more."
+  },
+  {
+    id:45, name:"Pita Bread Pizza", cuisine:"Italian", method:"Stovetop + Air Fryer", ninja:false,
+    time:"15 min", serve:"As a meal or snack",
+    emoji:"🍕",
+    ingredients:["Pita bread","Pizza / pasta sauce (jarred)","Mozzarella / melting cheese","Sausage (smoked or jerk)","Onion","Cooking oil","All-purpose seasoning","Chili flakes / scotch bonnet"],
+    steps:[
+      {t:"Prep the toppings",d:"Slice sausage into thin coins. Slice ½ onion into thin rings. Slice or grate cheese."},
+      {t:"Assemble the pizza",d:"Lay pita bread flat. Spread 2-3 tbsp pizza sauce evenly — don't go all the way to the edge. Add generous layer of cheese. Top with sausage coins, onion rings, pinch of chili flakes."},
+      {t:"Cook — Air Fryer method (preferred)",d:"Place pita pizza in air fryer at 180°C for 6-8 minutes until cheese is melted and bubbling and edges of pita are crispy."},
+      {t:"Cook — Stovetop method",d:"Heat a dry pan on medium. Place pizza in pan, cover with a lid. Cook 5-6 minutes until cheese melts. Remove lid for last 1-2 minutes to crisp the base slightly."}
+    ],
+    tip:"Don't overload the toppings — pita is thin and too many toppings makes it soggy. A thin layer of sauce, generous cheese, and a modest amount of toppings gives the best result."
+  },
+  {
+    id:46, name:"Jamaican Escovitch Fish", cuisine:"Jamaican", method:"Stovetop", ninja:false,
+    time:"35 min", serve:"Brown rice, sweet potato, or hard dough bread",
+    emoji:"🐟",
+    ingredients:["Fish","Flour","Cooking oil","Onion","Bell peppers","Carrots","Vinegar","Sugar","Chili flakes / scotch bonnet","Black pepper","Salt","All-purpose seasoning","Lime / lemon"],
+    steps:[
+      {t:"Prep and season the fish",d:"Cut fish into small pieces — about 5-6cm chunks. Wash in lime water (squeeze 1 lime into cold water), rinse, pat completely dry with paper towel. Season with: 1 tsp all-purpose seasoning + ½ tsp black pepper + ½ tsp salt on all sides. Let sit 10 minutes."},
+      {t:"Coat and fry the fish",d:"Pour enough cooking oil into pan to shallow fry — oil should come halfway up the fish pieces. Heat on medium-high. Dust fish pieces lightly in flour, shaking off any excess. When oil is hot (test with a pinch of flour — it should sizzle immediately), add fish pieces carefully. DO NOT move for 3-4 minutes until golden crust forms on bottom. Flip once, cook 3 more minutes until deep golden all over. Drain on paper towel."},
+      {t:"Make the escovitch pickle",d:"In a separate pan or pot, heat 1 tbsp cooking oil on medium. Add 1 large onion sliced into rings + 1 sliced bell pepper + 1 julienned carrot. Cook 2-3 minutes — vegetables should soften slightly but still have crunch. Do not overcook."},
+      {t:"Add the pickle liquid",d:"Add to the vegetables: ½ cup vinegar + 1 tbsp sugar + ½ tsp salt + chili flakes to taste (traditional escovitch is spicy — be generous). Stir together. Bring to a simmer for 2 minutes until sugar dissolves. Taste — should be sharp, tangy, slightly sweet and spicy. Adjust sugar or vinegar to your liking."},
+      {t:"Pour over fish and rest",d:"Arrange fried fish pieces on a plate or in a dish. Pour the hot pickle and vegetables generously over the fish. Leave to sit minimum 10 minutes before serving — the pickle soaks into the fish and the flavour develops. Traditionally served at room temperature or slightly warm."}
+    ],
+    tip:"The resting time after pouring the pickle over is not optional — it's what makes escovitch taste like escovitch. The longer it sits the better it gets. Make it 30 minutes ahead if you can."
+  },
+  {
+    id:47, name:"Garlic Bok Choy", cuisine:"Asian", method:"Stovetop", ninja:false,
+    time:"10 min", serve:"Side dish alongside any protein",
+    emoji:"🥬",
+    ingredients:["Bok choy (Pak Choi)","Garlic","Cooking oil","Chicken stock","Salt","Black pepper","Soy sauce"],
+    steps:[
+      {t:"Prep the bok choy",d:"Cut the root end off 2-3 heads of bok choy. Separate each stalk from the base. Rinse each piece thoroughly under cold water — dirt hides between the stalks. Cut larger pieces in half lengthways if very big. Pat dry."},
+      {t:"Heat the pan",d:"Heat 1½ tbsp cooking oil in a wide pan or wok on medium-high until very hot. The pan must be properly hot before anything goes in."},
+      {t:"Add garlic",d:"Add 4 minced garlic cloves to the hot oil. Stir constantly for 30-45 seconds until golden and fragrant. Do not let it burn — it goes from golden to bitter very fast."},
+      {t:"Add bok choy",d:"Add bok choy to the pan. Toss with the garlic oil for 1 minute on high heat. Add 3 tbsp chicken stock + ½ tsp salt + ¼ tsp black pepper + 1 tsp soy sauce. Toss everything together."},
+      {t:"Cover and finish",d:"Cover pan with a lid for 1-2 minutes on medium heat. The bok choy will wilt and release its own liquid. It's ready when stalks are tender but still have a slight crunch and leaves are bright green and wilted. Do not overcook — it should not be mushy."}
+    ],
+    tip:"Bok choy cooks very fast — the whole thing takes under 10 minutes. The moment the leaves turn bright green and wilt it's done. Overcooking makes it watery and loses the crunch in the stalks which is the best part."
+  },
+];
+
+// STORAGE
+let checked = {};
+let activeTab = 'recipes';
+let methodFilter = 'All';
+let cuisineFilter = 'All';
+
+function loadData() {
+  try { checked = JSON.parse(localStorage.getItem('antoinette_pantry_v2') || '{}'); } catch { checked = {}; }
+}
+function saveData() {
+  try {
+    localStorage.setItem('antoinette_pantry_v2', JSON.stringify(checked));
+    const s = document.getElementById('saveStatus');
+    s.classList.add('show');
+    setTimeout(() => s.classList.remove('show'), 1500);
+  } catch(e) {}
+}
+function toggleItem(item) {
+  checked[item] = !checked[item];
+  saveData();
+  updateStats();
+  renderPantry();
+  renderRecipes();
+}
+
+function updateStats() {
+  const allItems = Object.values(PANTRY).flat();
+  const total = allItems.length;
+  const have = allItems.filter(i => checked[i]).length;
+  const ready = RECIPES.filter(r => r.ingredients.every(i => checked[i])).length;
+  document.getElementById('headerStats').textContent = `${have}/${total} stocked · ${ready} ready to cook`;
+  document.getElementById('dishCount').textContent = `Your ${RECIPES.length}-Dish Pantry System`;
+}
+
+function showTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='recipes')||(i===1&&tab==='pantry')));
+  document.getElementById('recipesTab').style.display = tab === 'recipes' ? '' : 'none';
+  document.getElementById('pantryTab').style.display = tab === 'pantry' ? '' : 'none';
+}
+
+function getMissing(recipe) { return recipe.ingredients.filter(i => !checked[i]); }
+
+function renderPantry() {
+  const container = document.getElementById('pantryTab');
+  let html = `<div class="pantry-intro">Check off items as you buy them. Your pantry saves automatically. Recipes sort by what you can cook right now.</div>`;
+  for (const [cat, items] of Object.entries(PANTRY)) {
+    const label = cat.replace(/([A-Z])/g,' $1').trim();
+    html += `<div class="pantry-category"><div class="cat-label">${label}</div>`;
+    for (const item of items) {
+      const isChecked = !!checked[item];
+      const safeItem = item.replace(/'/g, "\\'");
+      html += '<div class="pantry-item ' + (isChecked?'checked':'') + '" onclick="toggleItem(\'' + safeItem + '\')">' +
+        '<div class="checkbox"><span class="checkbox-tick">✓</span></div>' +
+        '<span class="pantry-label">' + item + '</span>' +
+        '</div>';
+    }
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function getPhotoUrl(recipeName) {
+  const query = PHOTO_SEARCH[recipeName] || recipeName.toLowerCase();
+  return `https://source.unsplash.com/800x400/?${encodeURIComponent(query)},food`;
+}
+
+function renderRecipes() {
+  const container = document.getElementById('recipesTab');
+  const allMethods = ['All','Stovetop','Ninja','BBQ Grill','Stovetop + Air Fryer','No Cook'];
+  const allCuisines = ['All',...new Set(RECIPES.map(r=>r.cuisine))];
+
+  let html = `<div class="ninja-tip">🥘 <strong>Ninja tip:</strong> Filter by Ninja to see slow-cook meals — start one before you leave, dinner is ready when you get home.</div>`;
+
+  html += `<div class="filter-row">`;
+  const methodLabels = {'All':'All','Stovetop':'🔥 Stovetop','Stovetop + Air Fryer':'💨 Air Fryer','BBQ Grill':'🪵 BBQ','Ninja':'🥘 Ninja','No Cook':'🥪 No Cook'};
+  for (const m of allMethods) {
+    html += `<button class="filter-btn ${methodFilter===m?'active-method':''}" onclick="setMethod('${m}')">${methodLabels[m]||m}</button>`;
+  }
+  html += `</div><div class="filter-row">`;
+  for (const c of allCuisines) {
+    const color = CUISINE_COLORS[c]||'#444';
+    const isActive = cuisineFilter===c;
+    html += `<button class="filter-btn ${isActive?'active-cuisine':''}" style="${isActive?`background:${color};border-color:${color}`:`border-color:#3a3020`}" onclick="setCuisine('${c.replace(/'/g,"\\'")}')">${c}</button>`;
+  }
+  html += `</div>`;
+
+  const filtered = RECIPES
+    .filter(r=>(methodFilter==='All'||r.method===methodFilter)&&(cuisineFilter==='All'||r.cuisine===cuisineFilter))
+    .sort((a,b)=>getMissing(a).length-getMissing(b).length);
+
+  html += `<div class="recipe-list">`;
+  for (const r of filtered) {
+    const missing = getMissing(r);
+    const ready = missing.length===0;
+    const color = CUISINE_COLORS[r.cuisine]||'#555';
+    const isBBQ = r.method==='BBQ Grill';
+    const bgColor = r.ninja?'#0e1520':isBBQ?'#120d08':'#1a1810';
+    const borderColor = ready?'#2a4a2a':r.ninja?'#1a3050':isBBQ?'#3a2010':'#2a2518';
+    const leftColor = ready?'#4a9a4a':r.ninja?'#2a6aaa':isBBQ?'#7a4a1a':color;
+    const nameColor = r.ninja?'#7ab8ea':isBBQ?'#c9903a':'#e8c87a';
+    html += `<div class="recipe-card" style="background:${bgColor};border-color:${borderColor};border-left-color:${leftColor}" onclick="openRecipe(${r.id})">
+      <div class="card-top">
+        <div style="flex:1">
+          <div class="card-badges">
+            <span class="badge badge-cuisine" style="background:${color}">${r.cuisine}</span>
+            <span class="badge badge-method" style="background:${r.ninja?'#1a2a3a':isBBQ?'#2a1a0a':'#1e1a0e'};border-color:${r.ninja?'#2a5a8a':isBBQ?'#7a4a1a':'#3a3020'};color:${r.ninja?'#5a9ada':isBBQ?'#c97a3a':'#7a6a40'}">${METHOD_ICONS[r.method]||''} ${r.method}</span>
+          </div>
+          <div class="card-name" style="color:${nameColor}">${r.emoji} ${r.name}</div>
+          <div class="card-meta">⏱ ${r.time} · 🍽 ${r.serve}</div>
+        </div>
+        ${ready?`<div class="ready-badge">✓ Ready</div>`:`<div class="need-badge">Need ${missing.length}</div>`}
+      </div>
+      ${!ready&&missing.length>0?`<div class="card-missing">Missing: ${missing.slice(0,3).join(', ')}${missing.length>3?' +'+(missing.length-3)+' more':''}</div>`:''}
+    </div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function setMethod(m) { methodFilter=m; renderRecipes(); }
+function setCuisine(c) { cuisineFilter=c; renderRecipes(); }
+
+function openRecipe(id) {
+  const r = RECIPES.find(x=>x.id===id);
+  if(!r) return;
+  const color = CUISINE_COLORS[r.cuisine]||'#555';
+  const isBBQ = r.method==='BBQ Grill';
+  const photoUrl = getPhotoUrl(r.name);
+
+  let html = `<img src="${photoUrl}" class="modal-photo" alt="${r.name}" onerror="this.style.display='none'">`;
+  html += `<button class="modal-close" onclick="closeModalBtn()">×</button>`;
+  html += `<div class="modal-body">`;
+  html += `<div class="card-badges" style="margin-bottom:6px">
+    <span class="badge badge-cuisine" style="background:${color}">${r.cuisine}</span>
+    <span class="badge badge-method" style="background:${r.ninja?'#1a2a3a':'#1e1a0e'};border-color:${r.ninja?'#2a5a8a':'#3a3020'};color:${r.ninja?'#5a9ada':'#7a6a40'}">${METHOD_ICONS[r.method]||''} ${r.method}</span>
+  </div>`;
+  html += `<div class="modal-title">${r.emoji} ${r.name}</div>`;
+  html += `<div class="modal-time">⏱ ${r.time} &nbsp;·&nbsp; 🍽 ${r.serve}</div>`;
+
+  if(r.ninja) html += `<div class="modal-notice notice-ninja" style="margin-top:12px">🥘 <strong>Ninja:</strong> Brown on Stovetop mode first, then switch to Slow Cook LOW and leave it.</div>`;
+  if(isBBQ) html += `<div class="modal-notice notice-bbq" style="margin-top:12px">🪵 <strong>BBQ Grill:</strong> Preheat grill 10 minutes before cooking. Keep lid closed between flips to hold heat.</div>`;
+
+  html += `<div class="section-label">Ingredients</div><div class="ing-grid">`;
+  for(const ing of r.ingredients) {
+    html += `<span class="ing-tag ${checked[ing]?'ing-have':'ing-missing'}">${checked[ing]?'✓':'✗'} ${ing}</span>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="section-label">Method</div><div class="steps-list">`;
+  r.steps.forEach((step,i) => {
+    html += `<div class="step">
+      <div class="step-num">${i+1}</div>
+      <div>
+        <div class="step-text"><strong>${step.t}</strong></div>
+        <div class="step-detail">${step.d}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="tip-box"><div class="tip-label">Chef's Tip</div><div class="tip-text">${r.tip}</div></div>`;
+  html += `</div>`;
+
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) { if(e.target===document.getElementById('modalOverlay')) closeModalBtn(); }
+function closeModalBtn() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+loadData();
+updateStats();
+renderPantry();
+renderRecipes();
+</script>
+</body>
+</html>
